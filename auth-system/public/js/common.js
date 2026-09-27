@@ -86,7 +86,7 @@ function createOtpTimer({ timerEl, resendBtn, seconds, onResend }) {
   return { start };
 }
 
-// Use the local app when developing on localhost; otherwise use the deployed site origin.
+// Single-host deployment: use the same origin on localhost and on Render.
 const API_BASE_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
   ? ''
   : window.location.origin;
