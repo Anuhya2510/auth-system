@@ -86,8 +86,10 @@ function createOtpTimer({ timerEl, resendBtn, seconds, onResend }) {
   return { start };
 }
 
-// Render backend API
-const API_BASE_URL = 'https://rohith-solutions.onrender.com';
+// Use the local app when developing on localhost; otherwise use the deployed site origin.
+const API_BASE_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  ? ''
+  : window.location.origin;
 
 async function postJson(url, body) {
   try {

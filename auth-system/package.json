@@ -2,7 +2,7 @@
    "name": "auth-system",
   "version": "1.0.0",
   "engines": {
-    "node": "22.17.0"
+    "node": "24.x"
   },
   "description": "Professional authentication system with email OTP, JWT sessions, and secure password reset",
   "main": "server.js",
