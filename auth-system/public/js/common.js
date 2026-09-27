@@ -13,6 +13,7 @@ function initPasswordToggles() {
 // Returns { score: 0-4, label, color } for a password.
 function scorePassword(password) {
   let score = 0;
+
   if (password.length >= 8) score++;
   if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
   if (/\d/.test(password)) score++;
@@ -25,6 +26,7 @@ function scorePassword(password) {
     { label: 'Good', color: '#eab308' },
     { label: 'Strong', color: '#16a34a' },
   ];
+
   return { score, ...levels[score] };
 }
 
@@ -32,10 +34,12 @@ function initPasswordStrengthMeter(inputId, fillId, labelId) {
   const input = document.getElementById(inputId);
   const fill = document.getElementById(fillId);
   const label = document.getElementById(labelId);
+
   if (!input || !fill || !label) return;
 
   input.addEventListener('input', () => {
     const { score, label: text, color } = scorePassword(input.value);
+
     fill.style.width = `${(score / 4) * 100}%`;
     fill.style.background = color;
     label.textContent = input.value ? text : 'Enter a password';
@@ -47,7 +51,7 @@ function showMsg(el, message, type) {
   el.className = `msg ${type}`;
 }
 
-// Manages the "resend code" cooldown countdown. onResend is called when clicked.
+// Manages the "resend code" cooldown countdown.
 function createOtpTimer({ timerEl, resendBtn, seconds, onResend }) {
   let remaining = seconds;
   let intervalId = null;
@@ -59,6 +63,7 @@ function createOtpTimer({ timerEl, resendBtn, seconds, onResend }) {
       resendBtn.disabled = false;
       return;
     }
+
     timerEl.textContent = `Resend available in ${remaining}s`;
     remaining--;
   }
@@ -66,7 +71,9 @@ function createOtpTimer({ timerEl, resendBtn, seconds, onResend }) {
   function start(newSeconds) {
     remaining = newSeconds != null ? newSeconds : seconds;
     resendBtn.disabled = true;
+
     clearInterval(intervalId);
+
     tick();
     intervalId = setInterval(tick, 1000);
   }
@@ -79,30 +86,44 @@ function createOtpTimer({ timerEl, resendBtn, seconds, onResend }) {
   return { start };
 }
 
-const API_BASE_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-  ? ''
-  : window.location.origin;
+// Render backend API
+const API_BASE_URL = 'https://rohith-solutions.onrender.com';
 
 async function postJson(url, body) {
   try {
     const res = await fetch(`${API_BASE_URL}${url}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
       body: JSON.stringify(body || {}),
     });
+
     let data;
+
     try {
       data = await res.json();
     } catch {
-      data = { success: false, message: 'Unexpected server response.' };
+      data = {
+        success: false,
+        message: 'Unexpected server response.',
+      };
     }
-    return { ok: res.ok, status: res.status, data };
+
+    return {
+      ok: res.ok,
+      status: res.status,
+      data,
+    };
   } catch {
     return {
       ok: false,
       status: 0,
-      data: { success: false, message: 'Unable to reach the server. Please try again.' },
+      data: {
+        success: false,
+        message: 'Unable to reach the server. Please try again.',
+      },
     };
   }
 }
