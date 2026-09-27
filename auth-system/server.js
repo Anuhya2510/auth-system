@@ -17,9 +17,11 @@ const allowedOrigins = new Set([
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'https://rohith-solutions.onrender.com',
-  'https://rohith-solutions-hor4l3dvl-anuhya2510.vercel.app',
-  process.env.APP_BASE_URL,
 ]);
+
+if (process.env.APP_BASE_URL) {
+  allowedOrigins.add(process.env.APP_BASE_URL);
+}
 
 app.use((req, res, next) => {
   const origin = req.get('Origin');
