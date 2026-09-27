@@ -79,8 +79,10 @@ function createOtpTimer({ timerEl, resendBtn, seconds, onResend }) {
   return { start };
 }
 
+const API_BASE_URL = 'https://rohith-solutions.onrender.com';
+
 async function postJson(url, body) {
-  const res = await fetch(url, {
+  const res = await fetch(`${API_BASE_URL}${url}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
