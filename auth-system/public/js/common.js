@@ -79,22 +79,32 @@ function createOtpTimer({ timerEl, resendBtn, seconds, onResend }) {
   return { start };
 }
 
-const API_BASE_URL = 'https://rohith-solutions.onrender.com';
+const API_BASE_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  ? ''
+  : window.location.origin;
 
 async function postJson(url, body) {
-  const res = await fetch(`${API_BASE_URL}${url}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(body || {}),
-  });
-  let data;
   try {
-    data = await res.json();
+    const res = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(body || {}),
+    });
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      data = { success: false, message: 'Unexpected server response.' };
+    }
+    return { ok: res.ok, status: res.status, data };
   } catch {
-    data = { success: false, message: 'Unexpected server response.' };
+    return {
+      ok: false,
+      status: 0,
+      data: { success: false, message: 'Unable to reach the server. Please try again.' },
+    };
   }
-  return { ok: res.ok, status: res.status, data };
 }
 
 document.addEventListener('DOMContentLoaded', initPasswordToggles);

@@ -2,15 +2,302 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rohith Solutions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Rohith Solutions makes secure access simple.">
+  <title>Rohith Solutions | Secure access, simply</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #5f6c75;
+      --cream: #fffaf1;
+      --coral: #ff765f;
+      --yellow: #ffd166;
+      --teal: #1d9a93;
+      --blue: #356ae6;
+      --line: rgba(23, 33, 43, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 9% 12%, rgba(255, 209, 102, 0.55), transparent 23%),
+        radial-gradient(circle at 91% 86%, rgba(29, 154, 147, 0.3), transparent 28%),
+        var(--cream);
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    a { color: inherit; }
+
+    .page {
+      width: min(1180px, calc(100% - 40px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px 0 36px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      animation: reveal 0.6s ease both;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-size: 20px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--blue);
+      border-radius: 9px 9px 9px 2px;
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 14px;
+    }
+
+    .nav-link {
+      color: var(--ink);
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      border-bottom: 2px solid var(--yellow);
+    }
+
+    .hero {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      align-items: center;
+      gap: clamp(44px, 8vw, 110px);
+      padding: 70px 0 54px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin: 0 0 18px;
+      color: var(--teal);
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 650px;
+      margin: 0;
+      font-size: clamp(48px, 7vw, 86px);
+      font-weight: 500;
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    h1 span { color: var(--coral); }
+
+    .intro {
+      max-width: 500px;
+      margin: 24px 0 30px;
+      color: var(--muted);
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-family: 'Trebuchet MS', sans-serif;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 22px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .button:hover { transform: translateY(-2px); }
+
+    .button-primary {
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 5px 5px 0 var(--yellow);
+    }
+
+    .button-secondary {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.5);
+      border-color: var(--line);
+    }
+
+    .visual {
+      position: relative;
+      min-height: 390px;
+      display: grid;
+      place-items: center;
+      animation: reveal 0.8s 0.15s ease both;
+    }
+
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .shape-one {
+      width: 210px;
+      height: 210px;
+      top: 5%;
+      right: 4%;
+      background: var(--yellow);
+    }
+
+    .shape-two {
+      width: 150px;
+      height: 150px;
+      bottom: 7%;
+      left: 4%;
+      background: var(--coral);
+    }
+
+    .access-card {
+      position: relative;
+      width: min(100%, 360px);
+      padding: 28px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 18px;
+      box-shadow: 16px 18px 0 rgba(29, 154, 147, 0.2), 0 20px 50px rgba(23, 33, 43, 0.12);
+      backdrop-filter: blur(8px);
+    }
+
+    .access-card h2 {
+      margin: 0 0 8px;
+      font-size: 29px;
+      font-weight: 500;
+    }
+
+    .access-card p {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 0;
+      border-top: 1px solid var(--line);
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .feature-icon {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 14px;
+    }
+
+    .feature:nth-of-type(1) .feature-icon { background: var(--teal); }
+    .feature:nth-of-type(2) .feature-icon { background: var(--coral); }
+    .feature:nth-of-type(3) .feature-icon { background: var(--blue); }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-family: 'Trebuchet MS', sans-serif;
+      font-size: 12px;
+    }
+
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 760px) {
+      .page { width: min(100% - 28px, 560px); padding-top: 20px; }
+      .hero { grid-template-columns: 1fr; gap: 20px; padding: 66px 0 42px; }
+      .visual { min-height: 330px; }
+      .shape-one { right: 0; }
+      .shape-two { left: 0; }
+      .footer { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Rohith Solutions</h1>
-  <p>Welcome!</p>
+  <main class="page">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        Rohith Solutions
+      </a>
+      <a class="nav-link" href="/login.html">Log in</a>
+    </nav>
 
-  <a href="/signup.html">Sign Up</a>
-  <br>
-  <a href="/login.html">Login</a>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">A brighter way in</p>
+        <h1>Secure access, <span>simply.</span></h1>
+        <p class="intro">Your account should feel effortless. Rohith Solutions keeps every sign-in, verification, and recovery step clear and protected.</p>
+        <div class="actions">
+          <a class="button button-primary" href="/signup.html">Create an account</a>
+          <a class="button button-secondary" href="/login.html">Welcome back</a>
+        </div>
+      </div>
+
+      <div class="visual" aria-label="Account security features">
+        <div class="shape shape-one" aria-hidden="true"></div>
+        <div class="shape shape-two" aria-hidden="true"></div>
+        <div class="access-card">
+          <h2>Good to see you.</h2>
+          <p>Everything you need to get moving, with a little more peace of mind.</p>
+          <div class="feature"><span class="feature-icon" aria-hidden="true">✓</span> Verified sign-in</div>
+          <div class="feature"><span class="feature-icon" aria-hidden="true">✦</span> One-time security codes</div>
+          <div class="feature"><span class="feature-icon" aria-hidden="true">↻</span> Simple password recovery</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Thoughtful tools for everyday access.</span>
+      <span>© Rohith Solutions</span>
+    </footer>
+  </main>
 </body>
 </html>

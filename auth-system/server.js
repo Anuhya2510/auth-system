@@ -13,12 +13,31 @@ app.disable('x-powered-by');
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 
+const allowedOrigins = new Set([
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'https://rohith-solutions.onrender.com',
+  process.env.APP_BASE_URL,
+]);
+
+app.use((req, res, next) => {
+  const origin = req.get('Origin');
+  if (origin && allowedOrigins.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Vary', 'Origin');
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
 app.get('/', (req, res) => {
-  res.redirect('/login.html');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // API routes
