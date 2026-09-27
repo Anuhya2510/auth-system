@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log In</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="card">
+  <h1>Welcome back</h1>
+  <p class="subtitle" id="subtitle">Log in to your account</p>
+
+  <!-- Step 1: credentials -->
+  <form id="loginForm">
+    <label for="identifier">Email or username</label>
+    <input type="text" id="identifier" autocomplete="username" required>
+
+    <label for="password">Password</label>
+    <div class="password-field">
+      <input type="password" id="password" autocomplete="current-password" required>
+      <button type="button" class="toggle-visibility" data-target="password">Show</button>
+    </div>
+
+    <button type="submit" class="primary" id="loginSubmit">Continue</button>
+    <div class="msg" id="loginMsg"></div>
+  </form>
+
+  <!-- Step 2: OTP -->
+  <form id="otpForm" class="hidden">
+    <label for="otpCode">Enter the 6-digit code sent to your email</label>
+    <input type="text" id="otpCode" inputmode="numeric" maxlength="6" required>
+
+    <div class="otp-row">
+      <span id="otpTimer" style="font-size:13px;color:var(--muted);"></span>
+      <button type="button" class="link" id="resendOtpBtn" disabled>Resend code</button>
+    </div>
+
+    <button type="submit" class="primary" id="otpSubmit">Verify & log in</button>
+    <div class="msg" id="otpMsg"></div>
+  </form>
+
+  <p class="footer-link">
+    <a href="/forgot-password.html">Forgot password?</a> ·
+    New here? <a href="/signup.html">Sign up</a>
+  </p>
+</div>
+<script src="/js/common.js"></script>
+<script src="/js/login.js"></script>
+</body>
+</html>

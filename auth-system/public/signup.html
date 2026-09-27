@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign Up</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="card">
+  <h1>Create your account</h1>
+  <p class="subtitle" id="subtitle">Fill in your details to get started</p>
+
+  <!-- Step 1: details -->
+  <form id="signupForm">
+    <label for="username">Username</label>
+    <input type="text" id="username" autocomplete="username" required>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" autocomplete="email" required>
+
+    <label for="mobile">Mobile number</label>
+    <input type="tel" id="mobile" placeholder="+14155552671" autocomplete="tel" pattern="\+[1-9][0-9]{7,14}" required>
+
+    <label for="password">Password</label>
+    <div class="password-field">
+      <input type="password" id="password" autocomplete="new-password" required>
+      <button type="button" class="toggle-visibility" data-target="password">Show</button>
+    </div>
+    <div class="strength-meter"><div class="strength-meter-fill" id="strengthFill"></div></div>
+    <div class="strength-label" id="strengthLabel">Enter a password</div>
+
+    <label for="confirmPassword">Confirm password</label>
+    <div class="password-field">
+      <input type="password" id="confirmPassword" autocomplete="new-password" required>
+      <button type="button" class="toggle-visibility" data-target="confirmPassword">Show</button>
+    </div>
+
+    <button type="submit" class="primary" id="signupSubmit">Create account</button>
+    <div class="msg" id="signupMsg"></div>
+  </form>
+
+  <!-- Step 2: OTP -->
+  <form id="otpForm" class="hidden">
+    <label for="otpCode">Enter the 6-digit code sent to your email</label>
+    <input type="text" id="otpCode" inputmode="numeric" maxlength="6" required>
+
+    <div class="otp-row">
+      <span id="otpTimer" style="font-size:13px;color:var(--muted);"></span>
+      <button type="button" class="link" id="resendOtpBtn" disabled>Resend code</button>
+    </div>
+
+    <button type="submit" class="primary" id="otpSubmit">Verify & create account</button>
+    <div class="msg" id="otpMsg"></div>
+  </form>
+
+  <!-- Step 3: mobile verification -->
+  <form id="mobileOtpForm" class="hidden">
+    <label for="mobileOtpCode">Enter the 6-digit code sent to your mobile</label>
+    <input type="text" id="mobileOtpCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+
+    <div class="otp-row">
+      <span id="mobileOtpTimer" style="font-size:13px;color:var(--muted);"></span>
+      <button type="button" class="link" id="resendMobileOtpBtn">Resend SMS code</button>
+    </div>
+
+    <button type="submit" class="primary" id="mobileOtpSubmit">Verify mobile & create account</button>
+    <div class="msg" id="mobileOtpMsg"></div>
+  </form>
+
+  <p class="footer-link">Already have an account? <a href="/login.html">Log in</a></p>
+</div>
+<script src="/js/common.js"></script>
+<script src="/js/signup.js"></script>
+</body>
+</html>
