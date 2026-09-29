@@ -55,7 +55,7 @@ async function sendOtpOrRespond(res, email, purpose, result) {
     await sendOtpEmail(email, result.code, purpose, result.expiresInMinutes);
     return true;
   } catch (err) {
-    invalidateOtp(result.otpId);
+    await invalidateOtp(result.otpId);
     console.error('OTP email delivery failed:', err.message);
     res.status(503).json({
       success: false,
@@ -96,15 +96,15 @@ router.post('/signup/start', signupLimiter, signupRules, handleValidation, async
     const { username, email, mobile, password } = req.body;
     const normalizedEmail = email.toLowerCase();
 
-    if (User.emailExists(normalizedEmail)) {
+    if (await User.emailExists(normalizedEmail)) {
       return res.status(409).json({ success: false, message: 'Email is already registered' });
     }
-    if (User.usernameExists(username)) {
+    if (await User.usernameExists(username)) {
       return res.status(409).json({ success: false, message: 'Username is already taken' });
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    PendingSignup.upsert({ username, email: normalizedEmail, mobile, passwordHash });
+    await PendingSignup.upsert({ username, email: normalizedEmail, mobile, passwordHash });
 
     const result = await otpCooldownGuard(res, () => issueOtp(normalizedEmail, 'signup'));
     if (!result) return; // response already sent by guard
@@ -132,7 +132,7 @@ router.post(
       const { email, code } = req.body;
       const normalizedEmail = email.toLowerCase();
 
-      const pending = PendingSignup.findByEmail(normalizedEmail);
+      const pending = await PendingSignup.findByEmail(normalizedEmail);
       if (!pending) {
         return res.status(400).json({
           success: false,
@@ -155,7 +155,7 @@ router.post(
         return res.status(400).json({ success: false, message: messages[result.reason] });
       }
 
-      PendingSignup.markEmailVerified(normalizedEmail);
+      await PendingSignup.markEmailVerified(normalizedEmail);
       return startPhoneVerification(res, pending.mobile);
     } catch (err) {
       next(err);
@@ -170,7 +170,7 @@ router.post(
   handleValidation,
   async (req, res, next) => {
     try {
-      const pending = PendingSignup.findByEmail(req.body.email);
+      const pending = await PendingSignup.findByEmail(req.body.email);
       if (!pending || !pending.email_verified) {
         return res.status(400).json({
           success: false,
@@ -193,7 +193,7 @@ router.post(
   async (req, res, next) => {
     try {
       const normalizedEmail = req.body.email.toLowerCase();
-      const pending = PendingSignup.findByEmail(normalizedEmail);
+      const pending = await PendingSignup.findByEmail(normalizedEmail);
       if (!pending || !pending.email_verified) {
         return res.status(400).json({
           success: false,
@@ -209,23 +209,26 @@ router.post(
         });
       }
 
-      if (User.emailExists(normalizedEmail) || User.usernameExists(pending.username)) {
-        PendingSignup.deleteByEmail(normalizedEmail);
+      if (
+        (await User.emailExists(normalizedEmail)) ||
+        (await User.usernameExists(pending.username))
+      ) {
+        await PendingSignup.deleteByEmail(normalizedEmail);
         return res.status(409).json({
           success: false,
           message: 'This email or username was registered while signup was pending. Please start again.',
         });
       }
 
-      const user = User.create({
+      const user = await User.create({
         username: pending.username,
         email: normalizedEmail,
         mobile: pending.mobile,
         passwordHash: pending.password_hash,
       });
-      User.markEmailVerified(user.id);
-      User.markMobileVerified(user.id);
-      PendingSignup.deleteByEmail(normalizedEmail);
+      await User.markEmailVerified(user.id);
+      await User.markMobileVerified(user.id);
+      await PendingSignup.deleteByEmail(normalizedEmail);
 
       res.json({ success: true, message: 'Email and mobile verified. Account created successfully.' });
     } catch (err) {
@@ -240,7 +243,7 @@ router.post('/signup/resend-otp', otpRequestLimiter, otpRules, handleValidation,
     const { email } = req.body;
     const normalizedEmail = email.toLowerCase();
 
-    const pending = PendingSignup.findByEmail(normalizedEmail);
+    const pending = await PendingSignup.findByEmail(normalizedEmail);
     if (!pending) {
       return res.status(400).json({
         success: false,
@@ -266,7 +269,7 @@ router.post('/signup/resend-otp', otpRequestLimiter, otpRules, handleValidation,
 router.post('/login/start', loginLimiter, loginRules, handleValidation, async (req, res, next) => {
   try {
     const { identifier, password } = req.body;
-    const user = User.findByEmailOrUsernameWithSecret(identifier);
+    const user = await User.findByEmailOrUsernameWithSecret(identifier);
 
     // Same generic response whether the user exists or the password is wrong.
     const invalidCredsResponse = () =>
@@ -322,7 +325,7 @@ router.post(
         return res.status(400).json({ success: false, message: messages[result.reason] });
       }
 
-      const user = User.findByEmailWithSecret(normalizedEmail);
+      const user = await User.findByEmailWithSecret(normalizedEmail);
       if (!user) {
         return res.status(400).json({ success: false, message: 'Account not found.' });
       }
@@ -352,7 +355,7 @@ router.post('/login/resend-otp', otpRequestLimiter, otpRules, handleValidation, 
   try {
     const { email } = req.body;
     const normalizedEmail = email.toLowerCase();
-    const user = User.findByEmailWithSecret(normalizedEmail);
+    const user = await User.findByEmailWithSecret(normalizedEmail);
     if (!user) {
       // Generic response — don't reveal account existence.
       return res.json({ success: true, message: GENERIC_OTP_SENT });
@@ -385,12 +388,13 @@ router.post(
     try {
       const { email } = req.body;
       const normalizedEmail = email.toLowerCase();
-      const user = User.findByEmailWithSecret(normalizedEmail);
+      const user = await User.findByEmailWithSecret(normalizedEmail);
 
       // Always respond the same way to avoid leaking which emails are registered.
       if (user) {
-        const { token, expiresInMinutes } = issueResetToken(user.id);
-        const resetUrl = `${process.env.APP_BASE_URL}/reset-password.html?token=${token}`;
+        const { token, expiresInMinutes } = await issueResetToken(user.id);
+        const appBaseUrl = process.env.APP_BASE_URL || process.env.RENDER_EXTERNAL_URL;
+        const resetUrl = `${appBaseUrl}/reset-password.html?token=${token}`;
         await sendPasswordResetEmail(normalizedEmail, resetUrl, expiresInMinutes);
       }
 
@@ -402,12 +406,16 @@ router.post(
 );
 
 // Lets the reset-password page confirm a token is valid before showing the form.
-router.get('/reset-password/validate', (req, res) => {
-  const { token } = req.query;
-  if (!token || !peekResetToken(token)) {
-    return res.status(400).json({ success: false, message: 'Invalid or expired reset link.' });
+router.get('/reset-password/validate', async (req, res, next) => {
+  try {
+    const { token } = req.query;
+    if (!token || !(await peekResetToken(token))) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset link.' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
   }
-  res.json({ success: true });
 });
 
 router.post(
@@ -417,13 +425,13 @@ router.post(
   async (req, res, next) => {
     try {
       const { token, password } = req.body;
-      const record = consumeResetToken(token);
+      const record = await consumeResetToken(token);
       if (!record) {
         return res.status(400).json({ success: false, message: 'Invalid or expired reset link.' });
       }
 
       const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-      User.updatePassword(record.user_id, passwordHash);
+      await User.updatePassword(record.user_id, passwordHash);
 
       res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
     } catch (err) {

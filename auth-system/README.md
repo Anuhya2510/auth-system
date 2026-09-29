@@ -1,8 +1,7 @@
 # Professional Authentication System
 
 Email/OTP + password auth with signup, login, and forgot/reset password flows.
-Node.js + Express backend, SQLite (file-based, no separate DB server needed),
-plain HTML/CSS/JS frontend.
+Node.js + Express backend, SQLite database, and plain HTML/CSS/JS frontend.
 
 ## Features
 
@@ -34,6 +33,10 @@ Edit `.env`:
 - `SMTP_*` — your email provider's SMTP credentials. For Gmail, use an
   [App Password](https://myaccount.google.com/apppasswords), not your
   regular password (requires 2-Step Verification enabled).
+- `DB_PATH` — optional local SQLite file path. Render sets this to the mounted
+  persistent disk path.
+- `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` — optional locally; required for
+  Vercel deployments. Without them, local development uses `data/auth.db`.
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and
   `TWILIO_VERIFY_SERVICE_SID` — credentials and Verify service from your
   Twilio console. Create a Verify service and enable SMS for the countries
@@ -50,19 +53,33 @@ npm run dev         # auto-restart on changes (requires devDependencies installe
 
 Visit `http://localhost:3000/signup.html`.
 
-## Deploy on Railway
+## Deploy on Vercel
 
-1. Push this project to a GitHub repository and create a Railway project from it.
-2. Add a volume to the app service and set its mount path to `/app/data`.
-  Set `DB_PATH` to `/app/data/auth.db` in the service variables so SQLite
-  data survives redeploys.
-3. Add the production variables from `.env` in Railway's service settings:
-  `JWT_SECRET`, `APP_BASE_URL`, the `SMTP_*` variables, and the three
-  `TWILIO_*` variables. Set `NODE_ENV=production`; Railway provides `PORT`.
-4. Set the service healthcheck path to `/health`, then deploy and generate a
-  public domain in Railway's networking settings.
-5. Set `APP_BASE_URL` to the generated `https://` domain and redeploy. Share
-  the generated domain with `/signup.html` appended.
+1. Set the Vercel project Root Directory to `auth-system` if deploying this
+  repository as-is.
+2. Create a Turso database and add `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`
+  to the Vercel project environment variables.
+3. Add `JWT_SECRET`, `APP_BASE_URL`, `SMTP_*`, and `TWILIO_*`. Set
+  `APP_BASE_URL` to the deployed Vercel origin and `NODE_ENV=production`.
+4. Deploy. The Vercel function serves the frontend and API; check `/health`
+  and open `/signup.html` after deployment.
+
+Vercel's filesystem is ephemeral, so the app requires Turso there. Existing
+local SQLite data is not migrated automatically.
+
+## Deploy on Render
+
+1. In Render, create a Blueprint using this repository and the root
+  `render.yaml`. The blueprint points the service at the `auth-system`
+  application directory and provisions a persistent disk at `/var/data`.
+2. During setup, provide the requested SMTP and Twilio environment variables.
+  Render generates `JWT_SECRET`; the service uses Render's assigned URL for
+  reset links and same-origin requests.
+3. Deploy and check `/health`. Open `/signup.html` on the Render service URL.
+
+The Render blueprint uses a paid Starter web service because persistent disks
+are not available on free web services. It stores SQLite at
+`/var/data/auth.db`. Keep the disk attached to preserve accounts across deploys.
 
 Never commit `.env` or put production secrets in `.env.example`.
 
@@ -94,7 +111,7 @@ which invalidates the token immediately (single use).
 ```
 auth-system/
 ├── server.js                  # Express app entry point
-├── config/db.js               # SQLite connection + schema
+├── config/db.js               # SQLite/libSQL connection + schema
 ├── models/                    # User, PendingSignup
 ├── middleware/                # rate limiting, validation, requireAuth
 ├── routes/auth.js             # all auth endpoints

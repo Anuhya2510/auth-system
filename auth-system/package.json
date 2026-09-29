@@ -1,29 +1,29 @@
 {
    "name": "auth-system",
-  "version": "1.0.0",
-  "engines": {
-    "node": "24.x"
-  },
-  "description": "Professional authentication system with email OTP, JWT sessions, and secure password reset",
-  "main": "server.js",
-  "type": "commonjs",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
-  },
-  "dependencies": {
-    "bcrypt": "^5.1.1",
-    "better-sqlite3": "^11.10.0",
-    "cookie-parser": "^1.4.6",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "express-rate-limit": "^7.4.0",
-    "express-validator": "^7.2.0",
-    "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^6.9.14",
-    "twilio": "^6.1.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.4"
-  }
+   "version": "1.0.0",
+   "engines": {
+      "node": "24.x"
+   },
+   "description": "Authentication system with SQLite, email OTP, JWT sessions, and secure password reset",
+   "main": "server.js",
+   "type": "commonjs",
+   "scripts": {
+      "start": "node server.js",
+      "dev": "nodemon server.js"
+   },
+   "dependencies": {
+      "@libsql/client": "^0.18.0",
+      "bcrypt": "^5.1.1",
+      "cookie-parser": "^1.4.6",
+      "dotenv": "^16.4.5",
+      "express": "^4.19.2",
+      "express-rate-limit": "^7.4.0",
+      "express-validator": "^7.2.0",
+      "jsonwebtoken": "^9.0.2",
+      "nodemailer": "^6.9.14",
+      "twilio": "^6.1.1"
+   },
+   "devDependencies": {
+      "nodemon": "^3.1.4"
+   }
 }

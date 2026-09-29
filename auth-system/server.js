@@ -6,12 +6,14 @@ const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth');
 const requireAuth = require('./middleware/requireAuth');
 const User = require('./models/User');
+const { initDb } = require('./config/db');
 
 const app = express();
 
 app.disable('x-powered-by');
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
+if (process.env.VERCEL) app.set('trust proxy', 1);
 
 const allowedOrigins = new Set([
   'http://localhost:3000',
@@ -21,6 +23,9 @@ const allowedOrigins = new Set([
 
 if (process.env.APP_BASE_URL) {
   allowedOrigins.add(process.env.APP_BASE_URL);
+}
+if (process.env.RENDER_EXTERNAL_URL) {
+  allowedOrigins.add(process.env.RENDER_EXTERNAL_URL);
 }
 
 app.use((req, res, next) => {
@@ -35,22 +40,41 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+app.get('/health', async (req, res, next) => {
+  try {
+    await initDb();
+    res.json({ status: 'ok' });
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+if (!process.env.VERCEL) {
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+}
 
 // API routes
+app.use('/api', async (req, res, next) => {
+  try {
+    await initDb();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 app.use('/api/auth', authRoutes);
 
 // Example protected endpoint — proves the session cookie works.
-app.get('/api/me', requireAuth, (req, res) => {
-  const user = User.findById(req.user.userId);
-  if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-  res.json({ success: true, user });
+app.get('/api/me', requireAuth, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, user });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Static frontend (signup, login, forgot/reset password pages)
@@ -63,6 +87,10 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Auth server running on http://localhost:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Auth server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
