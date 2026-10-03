@@ -4,10 +4,16 @@ const { createClient } = require('@libsql/client');
 
 const dbPath = process.env.DB_PATH || './data/auth.db';
 const localUrl = `file:${path.resolve(dbPath)}`;
-const databaseUrl = process.env.TURSO_DATABASE_URL || (!process.env.VERCEL ? localUrl : null);
+const tursoDatabaseUrl = (process.env.TURSO_DATABASE_URL || process.env.TURSO_DB_URL || '').trim();
+const tursoAuthToken = (process.env.TURSO_AUTH_TOKEN || process.env.TURSO_DB_AUTH_TOKEN || '').trim();
+const databaseUrl = tursoDatabaseUrl || (!process.env.VERCEL ? localUrl : null);
 
-if (!process.env.TURSO_DATABASE_URL && process.env.VERCEL) {
+if (process.env.VERCEL && (!tursoDatabaseUrl || !tursoAuthToken)) {
   throw new Error('Set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in Vercel Environment Variables');
+}
+
+if (!databaseUrl.startsWith('file:') && !tursoAuthToken) {
+  throw new Error('Set TURSO_AUTH_TOKEN when using a remote database');
 }
 
 if (databaseUrl.startsWith('file:')) {
@@ -16,7 +22,7 @@ if (databaseUrl.startsWith('file:')) {
 
 const db = createClient({
   url: databaseUrl,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+  authToken: tursoAuthToken || undefined,
 });
 
 let initialization;
