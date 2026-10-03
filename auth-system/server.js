@@ -83,6 +83,28 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Centralized error handler — never leak internals to the client.
 app.use((err, req, res, next) => {
   console.error(err); // server-side log only
+
+  if (err.code === 'SMTP_NOT_CONFIGURED') {
+    return res.status(503).json({
+      success: false,
+      message: 'Email delivery is not configured. Please try again later.',
+    });
+  }
+
+  if (err.code === 'SMS_NOT_CONFIGURED') {
+    return res.status(503).json({
+      success: false,
+      message: 'Phone verification is not configured. Please try again later.',
+    });
+  }
+
+  if (err.code === 'EMAIL_SEND_FAILED') {
+    return res.status(503).json({
+      success: false,
+      message: 'Could not send the email. Please try again later.',
+    });
+  }
+
   res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
 });
 

@@ -5,6 +5,12 @@ let transporter = null;
 function getTransporter() {
   if (transporter) return transporter;
 
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    const err = new Error('SMTP is not configured');
+    err.code = 'SMTP_NOT_CONFIGURED';
+    throw err;
+  }
+
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || '587', 10),
@@ -20,13 +26,18 @@ function getTransporter() {
 
 async function sendEmail({ to, subject, html, text }) {
   const t = getTransporter();
-  await t.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
-    to,
-    subject,
-    text,
-    html,
-  });
+  try {
+    await t.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (err) {
+    err.code = err.code || 'EMAIL_SEND_FAILED';
+    throw err;
+  }
 }
 
 async function sendOtpEmail(to, code, purpose, expiresInMinutes) {

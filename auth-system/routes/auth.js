@@ -392,10 +392,14 @@ router.post(
 
       // Always respond the same way to avoid leaking which emails are registered.
       if (user) {
-        const { token, expiresInMinutes } = await issueResetToken(user.id);
-        const appBaseUrl = process.env.APP_BASE_URL || process.env.RENDER_EXTERNAL_URL;
-        const resetUrl = `${appBaseUrl}/reset-password.html?token=${token}`;
-        await sendPasswordResetEmail(normalizedEmail, resetUrl, expiresInMinutes);
+        try {
+          const { token, expiresInMinutes } = await issueResetToken(user.id);
+          const appBaseUrl = process.env.APP_BASE_URL || process.env.RENDER_EXTERNAL_URL;
+          const resetUrl = `${appBaseUrl}/reset-password.html?token=${token}`;
+          await sendPasswordResetEmail(normalizedEmail, resetUrl, expiresInMinutes);
+        } catch (err) {
+          return next(err);
+        }
       }
 
       res.json({ success: true, message: GENERIC_RESET_SENT });
