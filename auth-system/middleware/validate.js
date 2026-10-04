@@ -34,6 +34,11 @@ const signupRules = [
     .matches(/^[a-zA-Z0-9_]+$/)
     .withMessage('Username can only contain letters, numbers, and underscores'),
   body('email').trim().isEmail().withMessage('Enter a valid email address').normalizeEmail(),
+  body('mobile')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isMobilePhone()
+    .withMessage('Enter a valid mobile number'),
   strongPasswordRule('password'),
   body('confirmPassword').custom((value, { req }) => {
     if (value !== req.body.password) {
