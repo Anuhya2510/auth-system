@@ -1,0 +1,84 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Auth Server",
+			"type": "shell",
+			"command": "cd auth-system && npm start",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Check git status",
+			"type": "shell",
+			"command": "git status --short && echo --- && git remote -v && echo --- && git branch --show-current",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Review diff",
+			"type": "shell",
+			"command": "git diff --stat -- auth-system",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Commit auth changes",
+			"type": "shell",
+			"command": "git add auth-system && git commit -m \"Update auth flows and email OTP\" -m \"Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\"",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Push to GitHub",
+			"type": "shell",
+			"command": "git push origin main",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run auth tests",
+			"type": "shell",
+			"command": "cd auth-system && node --test tests/*.test.js",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Inspect git before push",
+			"type": "shell",
+			"command": "git status --short --branch; git remote -v; git diff --stat; git diff --cached --stat",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Review ahead commits",
+			"type": "shell",
+			"command": "git --no-pager log --oneline --decorate origin/main..HEAD; git diff -- auth-system/middleware/validate.js",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Commit signup validation update",
+			"type": "shell",
+			"command": "git add auth-system/middleware/validate.js && git commit -m \"Validate optional signup mobile number\" -m \"Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\"",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Push main to GitHub",
+			"type": "shell",
+			"command": "git push origin main",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify GitHub push",
+			"type": "shell",
+			"command": "git status --short --branch; git --no-pager log -2 --oneline --decorate",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}
