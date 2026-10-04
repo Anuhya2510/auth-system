@@ -5,7 +5,6 @@ const PendingSignup = require('../models/PendingSignup');
 const { issueOtp, verifyOtp, invalidateOtp } = require('../utils/otp');
 const { issueResetToken, peekResetToken, consumeResetToken } = require('../utils/resetToken');
 const { sendOtpEmail, sendPasswordResetEmail } = require('../utils/email');
-const { sendPhoneVerification, verifyPhoneCode } = require('../utils/sms');
 const { signToken } = require('../utils/jwt');
 const {
   handleValidation,
@@ -13,8 +12,6 @@ const {
   loginRules,
   otpRules,
   otpVerifyRules,
-  signupMobileOtpRules,
-  signupMobileOtpVerifyRules,
   forgotPasswordRules,
   resetPasswordRules,
 } = require('../middleware/validate');
@@ -65,27 +62,6 @@ async function sendOtpOrRespond(res, email, purpose, result) {
   }
 }
 
-async function startPhoneVerification(res, mobile) {
-  try {
-    await sendPhoneVerification(mobile);
-    res.json({
-      success: true,
-      nextStep: 'mobile',
-      message: `Email verified. A verification code was sent to ${mobile}.`,
-    });
-    return true;
-  } catch (err) {
-    console.error('Phone verification SMS failed:', err.message);
-    res.status(503).json({
-      success: false,
-      nextStep: 'mobile',
-      emailVerified: true,
-      message: 'Your email is verified, but the SMS could not be sent. Check Twilio settings, then resend the code.',
-    });
-    return false;
-  }
-}
-
 /* ------------------------------------------------------------------ */
 /* SIGNUP                                                              */
 /* ------------------------------------------------------------------ */
@@ -93,7 +69,7 @@ async function startPhoneVerification(res, mobile) {
 // Step 1: validate + stash pending signup + send OTP to email.
 router.post('/signup/start', signupLimiter, signupRules, handleValidation, async (req, res, next) => {
   try {
-    const { username, email, mobile, password } = req.body;
+    const { username, email, mobile = '', password } = req.body;
     const normalizedEmail = email.toLowerCase();
 
     if (await User.emailExists(normalizedEmail)) {
@@ -104,7 +80,7 @@ router.post('/signup/start', signupLimiter, signupRules, handleValidation, async
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    await PendingSignup.upsert({ username, email: normalizedEmail, mobile, passwordHash });
+    await PendingSignup.upsert({ username, email: normalizedEmail, mobile: mobile || '', passwordHash });
 
     const result = await otpCooldownGuard(res, () => issueOtp(normalizedEmail, 'signup'));
     if (!result) return; // response already sent by guard
@@ -121,7 +97,7 @@ router.post('/signup/start', signupLimiter, signupRules, handleValidation, async
   }
 });
 
-// Step 2: verify email, then start the mobile verification step.
+// Step 2: verify email OTP and create the account immediately.
 router.post(
   '/signup/verify-otp',
   otpVerifyLimiter,
@@ -140,10 +116,6 @@ router.post(
         });
       }
 
-      if (pending.email_verified) {
-        return startPhoneVerification(res, pending.mobile);
-      }
-
       const result = await verifyOtp(normalizedEmail, 'signup', code);
       if (!result.success) {
         const messages = {
@@ -153,60 +125,6 @@ router.post(
           invalid: 'Incorrect verification code.',
         };
         return res.status(400).json({ success: false, message: messages[result.reason] });
-      }
-
-      await PendingSignup.markEmailVerified(normalizedEmail);
-      return startPhoneVerification(res, pending.mobile);
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-router.post(
-  '/signup/resend-mobile-otp',
-  otpRequestLimiter,
-  signupMobileOtpRules,
-  handleValidation,
-  async (req, res, next) => {
-    try {
-      const pending = await PendingSignup.findByEmail(req.body.email);
-      if (!pending || !pending.email_verified) {
-        return res.status(400).json({
-          success: false,
-          message: 'Verify your email before requesting a mobile code.',
-        });
-      }
-
-      return startPhoneVerification(res, pending.mobile);
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-router.post(
-  '/signup/verify-mobile-otp',
-  otpVerifyLimiter,
-  signupMobileOtpVerifyRules,
-  handleValidation,
-  async (req, res, next) => {
-    try {
-      const normalizedEmail = req.body.email.toLowerCase();
-      const pending = await PendingSignup.findByEmail(normalizedEmail);
-      if (!pending || !pending.email_verified) {
-        return res.status(400).json({
-          success: false,
-          message: 'Verify your email before verifying your mobile number.',
-        });
-      }
-
-      const verified = await verifyPhoneCode(pending.mobile, req.body.code);
-      if (!verified) {
-        return res.status(400).json({
-          success: false,
-          message: 'Incorrect or expired mobile verification code.',
-        });
       }
 
       if (
@@ -223,14 +141,13 @@ router.post(
       const user = await User.create({
         username: pending.username,
         email: normalizedEmail,
-        mobile: pending.mobile,
+        mobile: pending.mobile || '',
         passwordHash: pending.password_hash,
       });
       await User.markEmailVerified(user.id);
-      await User.markMobileVerified(user.id);
       await PendingSignup.deleteByEmail(normalizedEmail);
 
-      res.json({ success: true, message: 'Email and mobile verified. Account created successfully.' });
+      return res.json({ success: true, message: 'Email verified. Account created successfully.' });
     } catch (err) {
       next(err);
     }

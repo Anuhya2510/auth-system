@@ -3,11 +3,11 @@ const { db } = require('../config/db');
 const PUBLIC_FIELDS = 'id, username, email, mobile, is_email_verified, is_mobile_verified, created_at';
 
 const User = {
-  async create({ username, email, mobile, passwordHash }) {
+  async create({ username, email, mobile = '', passwordHash }) {
     const result = await db.execute({
       sql: `INSERT INTO users (username, email, mobile, password_hash)
        VALUES (?, ?, ?, ?) RETURNING ${PUBLIC_FIELDS}`,
-      args: [username, email, mobile, passwordHash],
+      args: [username, email, mobile || '', passwordHash],
     });
     return result.rows[0];
   },

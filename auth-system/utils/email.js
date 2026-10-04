@@ -41,20 +41,60 @@ async function sendEmail({ to, subject, html, text }) {
 }
 
 async function sendOtpEmail(to, code, purpose, expiresInMinutes) {
-  const purposeLabel = purpose === 'signup' ? 'Verify your email' : 'Your login code';
-  await sendEmail({
-    to,
-    subject: `${purposeLabel} — ${code}`,
-    text: `Your verification code is ${code}. It expires in ${expiresInMinutes} minutes. Do not share this code with anyone.`,
-    html: `
+  const isSignup = purpose === 'signup';
+  const purposeLabel = isSignup ? 'Email verification OTP' : 'Rohith Solutions login code';
+
+  const text = isSignup
+    ? [
+        'Hello,',
+        '',
+        'Thank you for registering with Rohith Solutions.',
+        '',
+        'Your email verification OTP is:',
+        '',
+        `[${code}]`,
+        '',
+        'Please enter this OTP on the Rohith Solutions website to verify your email address.',
+        '',
+        `This OTP is valid for a limited time. It expires in ${expiresInMinutes} minutes.`,
+        '',
+        'Please do not share this OTP with anyone.',
+        '',
+        'Regards,',
+        'Rohith Solutions',
+      ].join('\n')
+    : `Hello! Your secure Rohith Solutions code is ${code}. This code will expire in ${expiresInMinutes} minutes. Please keep it private and do not share it with anyone.`;
+
+  const html = isSignup
+    ? `
+      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 24px auto; color: #1f2937; line-height: 1.6;">
+        <p>Hello,</p>
+        <p>Thank you for registering with Rohith Solutions.</p>
+        <p>Your email verification OTP is:</p>
+        <div style="margin: 18px 0; padding: 16px 20px; border: 1px solid #dbe3ef; border-radius: 10px; background: #f8fafc; text-align: center;">
+          <span style="display: inline-block; font-size: 30px; font-weight: 700; letter-spacing: 6px; color: #111827;">[${code}]</span>
+        </div>
+        <p>Please enter this OTP on the Rohith Solutions website to verify your email address.</p>
+        <p>This OTP is valid for a limited time. It expires in <strong>${expiresInMinutes} minutes</strong>.</p>
+        <p style="color: #4b5563;">Please do not share this OTP with anyone.</p>
+        <p style="margin-top: 24px;">Regards,<br>Rohith Solutions</p>
+      </div>
+    `
+    : `
       <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
         <h2>${purposeLabel}</h2>
-        <p>Your one-time verification code is:</p>
+        <p>Hello! Your secure Rohith Solutions code is:</p>
         <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px;">${code}</p>
-        <p>This code expires in <strong>${expiresInMinutes} minutes</strong>.</p>
-        <p style="color: #888; font-size: 13px;">If you didn't request this, you can safely ignore this email. Never share this code with anyone.</p>
+        <p>This code is valid for <strong>${expiresInMinutes} minutes</strong>.</p>
+        <p style="color: #888; font-size: 13px;">If you did not request this, you can safely ignore this email. Please keep this code private and do not share it with anyone.</p>
       </div>
-    `,
+    `;
+
+  await sendEmail({
+    to,
+    subject: isSignup ? 'Verify your email address' : `${purposeLabel} — ${code}`,
+    text,
+    html,
   });
 }
 

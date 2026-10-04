@@ -3,7 +3,7 @@ const { db } = require('../config/db');
 const PENDING_SIGNUP_TTL_MINUTES = 30;
 
 const PendingSignup = {
-  async upsert({ username, email, mobile, passwordHash }) {
+  async upsert({ username, email, mobile = '', passwordHash }) {
     const expiresAt = new Date(
       Date.now() + PENDING_SIGNUP_TTL_MINUTES * 60 * 1000
     ).toISOString();
@@ -17,7 +17,7 @@ const PendingSignup = {
          password_hash = excluded.password_hash,
          email_verified = 0,
          expires_at = excluded.expires_at`,
-      args: [username, email.toLowerCase(), mobile, passwordHash, expiresAt],
+      args: [username, email.toLowerCase(), mobile || '', passwordHash, expiresAt],
     });
   },
 

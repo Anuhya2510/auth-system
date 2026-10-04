@@ -34,10 +34,6 @@ const signupRules = [
     .matches(/^[a-zA-Z0-9_]+$/)
     .withMessage('Username can only contain letters, numbers, and underscores'),
   body('email').trim().isEmail().withMessage('Enter a valid email address').normalizeEmail(),
-  body('mobile')
-    .trim()
-    .matches(/^\+[1-9]\d{7,14}$/)
-    .withMessage('Enter a valid mobile number in international format, e.g. +14155552671'),
   strongPasswordRule('password'),
   body('confirmPassword').custom((value, { req }) => {
     if (value !== req.body.password) {
@@ -62,15 +58,6 @@ const otpVerifyRules = [
   body('code').trim().isLength({ min: 6, max: 6 }).isNumeric().withMessage('Enter the 6-digit code'),
 ];
 
-const signupMobileOtpRules = [
-  body('email').trim().isEmail().withMessage('Enter a valid email address').normalizeEmail(),
-];
-
-const signupMobileOtpVerifyRules = [
-  ...signupMobileOtpRules,
-  body('code').trim().isLength({ min: 6, max: 6 }).isNumeric().withMessage('Enter the 6-digit code'),
-];
-
 const forgotPasswordRules = [
   body('email').trim().isEmail().withMessage('Enter a valid email address').normalizeEmail(),
 ];
@@ -92,8 +79,6 @@ module.exports = {
   loginRules,
   otpRules,
   otpVerifyRules,
-  signupMobileOtpRules,
-  signupMobileOtpVerifyRules,
   forgotPasswordRules,
   resetPasswordRules,
 };
