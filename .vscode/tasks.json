@@ -79,6 +79,20 @@
 			"command": "git status --short --branch; git --no-pager log -2 --oneline --decorate",
 			"isBackground": false,
 			"problemMatcher": []
+		},
+		{
+			"label": "Commit Google verification file",
+			"type": "shell",
+			"command": "git add auth-system/public/google85d009984227fd2c.html && git commit -m \"Add Google Search Console verification file\" -m \"Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>\"",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Push verification to GitHub",
+			"type": "shell",
+			"command": "git push origin main",
+			"isBackground": false,
+			"problemMatcher": []
 		}
 	]
 }
