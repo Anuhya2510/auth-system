@@ -16,6 +16,8 @@ services:
         value: production
       - key: DB_PATH
         value: /var/data/auth.db
+      - key: FILE_STORAGE_PATH
+        value: /var/data/gallery
       - key: JWT_SECRET
         generateValue: true
       - key: SMTP_HOST

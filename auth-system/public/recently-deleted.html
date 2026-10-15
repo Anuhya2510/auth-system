@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recently Deleted | Rohith Solution</title>
+  <link rel="stylesheet" href="/css/style.css?v=2">
+</head>
+<body class="gallery-page">
+  <header class="gallery-header">
+    <a class="dashboard-brand" href="/dashboard.html">Rohith Solution</a>
+    <nav class="gallery-top-nav" aria-label="Main navigation">
+      <a href="/gallery.html">Gallery</a>
+      <a class="active" href="/recently-deleted.html">Recently Deleted</a>
+      <a href="/dashboard.html">Home</a>
+    </nav>
+    <span class="gallery-user" id="galleryUser"></span>
+  </header>
+
+  <main class="gallery-main">
+    <div class="gallery-heading">
+      <div>
+        <h1 id="pageTitle">Recently Deleted</h1>
+        <p id="pageDescription">Items stay here for 30 days, then are permanently deleted.</p>
+      </div>
+      <div class="gallery-upload-actions" id="uploadActions">
+        <div class="view-toggle" role="group" aria-label="Recently Deleted layout">
+          <button class="view-toggle-button active" type="button" data-view="grid" aria-pressed="true">Grid</button>
+          <button class="view-toggle-button" type="button" data-view="list" aria-pressed="false">List</button>
+        </div>
+        <button class="gallery-button secondary" id="restoreAllButton" type="button">Restore All</button>
+        <button class="gallery-button danger-button" id="emptyTrashButton" type="button">Delete All</button>
+      </div>
+    </div>
+
+    <p class="recovery-notice"><strong>30-day recovery period.</strong> Restore items before their deadline. Permanently deleted or expired items cannot be recovered through this app.</p>
+    <section class="gallery-toolbar">
+      <div class="gallery-location">
+        <div class="gallery-breadcrumbs"><strong>Recently Deleted</strong></div>
+        <span id="itemCount" class="gallery-muted"></span>
+      </div>
+      <div class="gallery-tools">
+        <label class="gallery-search">
+          <span class="visually-hidden">Search deleted items</span>
+          <input id="searchInput" type="search" placeholder="Search deleted items">
+        </label>
+        <label class="gallery-sort-label" for="sortSelect">Sort</label>
+        <select id="sortSelect" aria-label="Sort deleted items">
+          <option value="date">Recent</option>
+          <option value="name">Name</option>
+        </select>
+        <label class="gallery-sort-label" for="trashCategory">Type</label>
+        <select id="trashCategory" aria-label="Filter deleted items by type">
+          <option value="all">All types</option>
+          <option value="photos">Photos</option>
+          <option value="videos">Videos</option>
+          <option value="documents">Documents</option>
+          <option value="folders">Folders</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="gallery-selection-bar" id="selectionBar" hidden>
+      <label><input id="selectAll" type="checkbox"> Select all</label>
+      <span id="selectionCount">0 selected</span>
+      <div class="gallery-selection-actions" id="selectionActions"></div>
+      <button class="gallery-button text-button" id="clearSelection" type="button">Cancel</button>
+    </section>
+
+    <p class="gallery-notice" id="galleryNotice" role="status" aria-live="polite"></p>
+    <div class="gallery-loading" id="loadingIndicator" hidden>Loading deleted items…</div>
+    <section class="gallery-grid" id="itemGrid" aria-live="polite"></section>
+    <div class="gallery-pagination" id="paginationControls" hidden>
+      <button class="gallery-button secondary" id="loadMoreButton" type="button">Load more</button>
+      <span class="gallery-muted" id="paginationStatus"></span>
+    </div>
+    <section class="gallery-empty" id="emptyState" hidden>
+      <div class="gallery-empty-icon" aria-hidden="true">✓</div>
+      <h2 id="emptyTitle">Recently Deleted is empty</h2>
+      <p id="emptyDescription">Items you delete will be kept here for 30 days.</p>
+    </section>
+  </main>
+
+  <dialog class="gallery-dialog" id="previewDialog">
+    <div class="dialog-heading">
+      <h2 id="previewTitle"></h2>
+      <button class="dialog-close" type="button" data-close="previewDialog" aria-label="Close preview">×</button>
+    </div>
+    <div class="preview-content" id="previewContent"></div>
+  </dialog>
+
+  <dialog class="gallery-dialog" id="destinationDialog">
+    <form id="destinationForm">
+      <div class="dialog-heading">
+        <h2>Choose a restore location</h2>
+        <button class="dialog-close" type="button" data-close="destinationDialog" aria-label="Close">×</button>
+      </div>
+      <p>The original folder is no longer available. Select where to restore the selected items.</p>
+      <label for="destinationSelect">Destination folder</label>
+      <select id="destinationSelect"></select>
+      <div class="dialog-actions">
+        <button class="gallery-button secondary" type="button" data-close="destinationDialog">Cancel</button>
+        <button class="gallery-button primary-button" type="submit">Restore here</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/js/gallery.js?v=18"></script>
+</body>
+</html>

@@ -72,8 +72,39 @@ async function initDb() {
           used INTEGER NOT NULL DEFAULT 0,
           created_at TEXT NOT NULL DEFAULT (datetime('now'))
         )`,
+          `CREATE TABLE IF NOT EXISTS gallery_folders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          name TEXT NOT NULL,
+          parent_id INTEGER NOT NULL DEFAULT 0,
+          is_favorite INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          deleted_at TEXT,
+          delete_expires_at TEXT,
+          deletion_group TEXT,
+          deletion_root INTEGER NOT NULL DEFAULT 0
+        )`,
+          `CREATE TABLE IF NOT EXISTS gallery_files (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          folder_id INTEGER NOT NULL DEFAULT 0,
+          name TEXT NOT NULL,
+          storage_key TEXT NOT NULL UNIQUE,
+          mime_type TEXT NOT NULL,
+          size INTEGER NOT NULL,
+          is_favorite INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          deleted_at TEXT,
+          delete_expires_at TEXT,
+          deletion_group TEXT,
+          deletion_root INTEGER NOT NULL DEFAULT 0
+        )`,
           'CREATE INDEX IF NOT EXISTS idx_otps_email_purpose ON otps(email, purpose)',
           'CREATE INDEX IF NOT EXISTS idx_reset_tokens_user ON password_reset_tokens(user_id)',
+          'CREATE INDEX IF NOT EXISTS idx_gallery_folders_owner_parent ON gallery_folders(owner_id, parent_id, deleted_at)',
+          'CREATE INDEX IF NOT EXISTS idx_gallery_files_owner_folder ON gallery_files(owner_id, folder_id, deleted_at)',
+          'CREATE INDEX IF NOT EXISTS idx_gallery_files_expiry ON gallery_files(delete_expires_at)',
+          'CREATE INDEX IF NOT EXISTS idx_gallery_folders_expiry ON gallery_folders(delete_expires_at)',
         ].map((sql) => ({ sql })),
         'write'
       )
@@ -81,6 +112,8 @@ async function initDb() {
         for (const [table, column, definition] of [
           ['users', 'is_mobile_verified', 'INTEGER NOT NULL DEFAULT 0'],
           ['pending_signups', 'email_verified', 'INTEGER NOT NULL DEFAULT 0'],
+          ['gallery_folders', 'is_favorite', 'INTEGER NOT NULL DEFAULT 0'],
+          ['gallery_files', 'is_favorite', 'INTEGER NOT NULL DEFAULT 0'],
         ]) {
           const result = await db.execute(`PRAGMA table_info(${table})`);
           if (!result.rows.some((row) => row.name === column)) {

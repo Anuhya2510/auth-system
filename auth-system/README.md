@@ -35,6 +35,8 @@ Edit `.env`:
   regular password (requires 2-Step Verification enabled).
 - `DB_PATH` — optional local SQLite file path. Render sets this to the mounted
   persistent disk path.
+- `FILE_STORAGE_PATH` — private file-byte storage directory. Defaults to
+  `data/gallery` locally; Render uses `/var/data/gallery` on its persistent disk.
 - `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` — optional locally; required for
   Vercel deployments. Without them, local development uses `data/auth.db`.
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and
@@ -67,6 +69,10 @@ Visit `http://localhost:3000/signup.html`.
 Vercel's filesystem is ephemeral, so the app requires Turso there. Existing
 local SQLite data is not migrated automatically.
 
+The Gallery requires persistent file storage and returns `503` on Vercel until
+an object-storage adapter is configured. Do not point `FILE_STORAGE_PATH` at
+Vercel's ephemeral filesystem.
+
 ## Deploy on Render
 
 1. In Render, create a Blueprint using this repository and the root
@@ -79,7 +85,35 @@ local SQLite data is not migrated automatically.
 
 The Render blueprint uses a paid Starter web service because persistent disks
 are not available on free web services. It stores SQLite at
-`/var/data/auth.db`. Keep the disk attached to preserve accounts across deploys.
+`/var/data/auth.db` and Gallery files at `/var/data/gallery`. Keep the disk
+attached to preserve accounts and files across deploys.
+
+## Gallery and file recovery
+
+After logging in, open `/gallery.html` to upload files, create/rename folders,
+search and sort items, switch between grid and list layouts, preview supported
+images, videos, PDFs, and plain text/CSV files, and download files. Large
+folders are paginated. Drag-and-drop uploads are supported on the Gallery page.
+Folder uploads use the browser's directory-picker support where available.
+Uploads are limited to 10 files and 50 MB total per request, with a 25 MB
+per-file limit. File bytes are stored outside `public/` under opaque identifiers;
+every listing, preview, download, restore, and deletion request requires the
+authenticated session and checks file ownership.
+
+Normal deletion moves the file or folder to `/recently-deleted.html` without
+removing its file bytes. Items can be restored for 30 days. Restore conflicts
+are resolved by assigning a non-conflicting name, never by overwriting an
+existing file. Recently Deleted supports search, type filters, original-location
+details, individual/bulk restore, and restore-all. A background cleanup task runs
+hourly on the local/Render server
+and permanently removes expired bytes and metadata. Permanent deletion and
+emptying Recently Deleted require confirmation in the UI.
+
+The schema for `gallery_folders` and `gallery_files` is created idempotently
+when the app initializes its database; no manual SQL migration is required.
+For local testing, set `FILE_STORAGE_PATH=./data/gallery` in `.env`, run
+`npm install`, then `npm start` and sign in at `http://localhost:3000/login.html`.
+Run `npm test` for the automated auth and Gallery integration tests.
 
 Never commit `.env` or put production secrets in `.env.example`.
 

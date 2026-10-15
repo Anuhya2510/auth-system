@@ -4,6 +4,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./routes/auth');
+const galleryRoutes = require('./routes/gallery');
 const requireAuth = require('./middleware/requireAuth');
 const User = require('./models/User');
 const { initDb } = require('./config/db');
@@ -65,6 +66,7 @@ app.use('/api', async (req, res, next) => {
   }
 });
 app.use('/api/auth', authRoutes);
+app.use('/api/gallery', galleryRoutes.router);
 
 // Example protected endpoint — proves the session cookie works.
 app.get('/api/me', requireAuth, async (req, res, next) => {
@@ -109,9 +111,10 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-if (!process.env.VERCEL) {
+if (require.main === module && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Auth server running on http://localhost:${PORT}`);
+    galleryRoutes.startGalleryCleanup();
   });
 }
 
