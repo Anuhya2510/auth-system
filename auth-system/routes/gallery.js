@@ -6,7 +6,10 @@ const rateLimit = require('express-rate-limit');
 const requireAuth = require('../middleware/requireAuth');
 const Gallery = require('../models/Gallery');
 const { db, initDb } = require('../config/db');
-const { fs, storageRoot, getFilePath, ensureStorageReady } = require('../config/fileStorage');
+const {
+  fs, storageRoot, getFilePath, ensureStorageReady, storeFile,
+  deleteStorageFile, storageFileExists, getStorageStream, isVercel,
+} = require('../config/fileStorage');
 
 const router = express.Router();
 const RETENTION_DAYS = 30;
@@ -132,6 +135,7 @@ async function collectFolderTree(ownerId, rootFolderId) {
 
 async function reconcilePurgeDirectory() {
   await ensureStorageReady();
+  if (isVercel) return;
   await fs.mkdir(PURGE_DIR, { recursive: true });
   for (const entry of await fs.readdir(PURGE_DIR)) {
     if (!/^[a-f0-9-]{36}$/i.test(entry)) continue;
@@ -153,6 +157,11 @@ async function reconcilePurgeDirectory() {
 
 async function purgeGroup(ownerId, groupId) {
   const files = await Gallery.getGroupFiles(ownerId, groupId);
+  if (isVercel) {
+    for (const file of files) await deleteStorageFile(file.storage_key);
+    await Gallery.deleteGroupMetadata(ownerId, groupId);
+    return;
+  }
   await fs.mkdir(PURGE_DIR, { recursive: true });
   const moved = [];
   try {
@@ -185,13 +194,8 @@ async function purgeGroup(ownerId, groupId) {
 async function ensureGroupFilesPresent(ownerId, groupId) {
   const files = await Gallery.getGroupFiles(ownerId, groupId);
   for (const file of files) {
-    try {
-      await fs.access(getFilePath(file.storage_key));
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        throw httpError(409, 'A stored file is missing, so the selected items were not restored.', 'RESTORE_CONTENT_MISSING');
-      }
-      throw err;
+    if (!(await storageFileExists(file.storage_key))) {
+      throw httpError(409, 'A stored file is missing, so the selected items were not restored.', 'RESTORE_CONTENT_MISSING');
     }
   }
 }
@@ -354,7 +358,6 @@ router.post('/upload', uploadLimiter, (req, res, next) => {
   });
 }, async (req, res, next) => {
   const incomingFiles = req.files || [];
-  const createdPaths = [];
   const createdStorageKeys = [];
   const createdFolderIds = new Set();
   try {
@@ -392,9 +395,7 @@ router.post('/upload', uploadLimiter, (req, res, next) => {
       }
       const name = await uniqueName(ownerId, folderId, parts[parts.length - 1], new Set());
       const storageKey = crypto.randomUUID();
-      const destination = getFilePath(storageKey);
-      await fs.rename(file.path, destination);
-      createdPaths.push(destination);
+      await storeFile(file.path, storageKey, file.mimetype);
       createdStorageKeys.push(storageKey);
       const item = await Gallery.createFile(ownerId, {
         folderId,
@@ -421,11 +422,11 @@ router.post('/upload', uploadLimiter, (req, res, next) => {
         if (cleanupError.code !== 'ENOENT') console.error('Could not remove temporary gallery upload:', cleanupError);
       }
     }
-    for (const filePath of createdPaths) {
+    for (const storageKey of createdStorageKeys) {
       try {
-        await fs.unlink(filePath);
+        await deleteStorageFile(storageKey);
       } catch (cleanupError) {
-        if (cleanupError.code !== 'ENOENT') console.error('Could not roll back gallery upload:', cleanupError);
+        console.error('Could not roll back gallery upload:', cleanupError);
       }
     }
     next(err);
@@ -688,7 +689,6 @@ router.get('/files/:id/content', async (req, res, next) => {
     )) {
       throw httpError(404, 'File not found.');
     }
-    const filePath = getFilePath(file.storage_key);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'private, no-store');
     const inlineTypes = new Set([
@@ -696,11 +696,17 @@ router.get('/files/:id/content', async (req, res, next) => {
       'video/mp4', 'video/webm', 'video/ogg', 'application/pdf',
       'text/plain', 'text/csv',
     ]);
+    const stream = await getStorageStream(file.storage_key);
+    if (!stream) throw httpError(404, 'File content is missing.');
     if (req.query.inline === '1' && inlineTypes.has(file.mime_type)) {
       res.type(file.mime_type === 'text/csv' ? 'text/plain' : file.mime_type);
-      return res.sendFile(filePath);
+      stream.on('error', next);
+      return stream.pipe(res);
     }
-    return res.download(filePath, file.name);
+    res.attachment(file.name);
+    res.type(file.mime_type);
+    stream.on('error', next);
+    return stream.pipe(res);
   } catch (err) {
     next(err);
   }

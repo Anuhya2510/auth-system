@@ -107,6 +107,13 @@ app.use((err, req, res, next) => {
     });
   }
 
+  if (err.code === 'GALLERY_STORAGE_NOT_CONFIGURED') {
+    return res.status(503).json({
+      success: false,
+      message: 'Gallery storage is not configured. Connect a private Vercel Blob store to this project.',
+    });
+  }
+
   res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
 });
 

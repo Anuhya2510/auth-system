@@ -61,17 +61,18 @@ Visit `http://localhost:3000/signup.html`.
   repository as-is.
 2. Create a Turso database and add `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`
   to the Vercel project environment variables.
-3. Add `JWT_SECRET`, `APP_BASE_URL`, `SMTP_*`, and `TWILIO_*`. Set
+3. Create and connect a **private Vercel Blob store** from the project's Storage
+  tab. Vercel supplies the Blob store ID and authentication to the deployment.
+4. Add `JWT_SECRET`, `APP_BASE_URL`, `SMTP_*`, and `TWILIO_*`. Set
   `APP_BASE_URL` to the deployed Vercel origin and `NODE_ENV=production`.
-4. Deploy. The Vercel function serves the frontend and API; check `/health`
+5. Deploy. The Vercel function serves the frontend and API; check `/health`
   and open `/signup.html` after deployment.
 
 Vercel's filesystem is ephemeral, so the app requires Turso there. Existing
 local SQLite data is not migrated automatically.
 
-The Gallery requires persistent file storage and returns `503` on Vercel until
-an object-storage adapter is configured. Do not point `FILE_STORAGE_PATH` at
-Vercel's ephemeral filesystem.
+Gallery uploads use private Vercel Blob storage on Vercel, served through the
+authenticated API. Local and Render deployments continue to use disk storage.
 
 ## Deploy on Render
 
