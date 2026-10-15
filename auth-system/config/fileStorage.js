@@ -91,17 +91,27 @@ async function storageFileExists(storageKey) {
   }
 }
 
-async function getStorageStream(storageKey) {
+async function getStorageObject(storageKey) {
   if (isVercel) {
     const { get } = blobClient();
     const result = await get(storageKey, { access: blobAccess });
     if (!result || result.statusCode !== 200 || !result.stream) return null;
-    return Readable.fromWeb(result.stream);
+    return {
+      stream: Readable.fromWeb(result.stream),
+      size: result.blob.size,
+      contentType: result.blob.contentType,
+    };
   }
-  return createReadStream(getFilePath(storageKey));
+  const filePath = getFilePath(storageKey);
+  const metadata = await fs.stat(filePath);
+  return {
+    stream: createReadStream(filePath),
+    size: metadata.size,
+    contentType: null,
+  };
 }
 
 module.exports = {
   fs, storageRoot, getFilePath, ensureStorageReady, storeFile,
-  deleteStorageFile, storageFileExists, getStorageStream, isVercel,
+  deleteStorageFile, storageFileExists, getStorageObject, isVercel,
 };

@@ -8,7 +8,7 @@ const Gallery = require('../models/Gallery');
 const { db, initDb } = require('../config/db');
 const {
   fs, storageRoot, getFilePath, ensureStorageReady, storeFile,
-  deleteStorageFile, storageFileExists, getStorageStream, isVercel,
+  deleteStorageFile, storageFileExists, getStorageObject, isVercel,
 } = require('../config/fileStorage');
 
 const router = express.Router();
@@ -687,17 +687,20 @@ router.get('/files/:id/content', async (req, res, next) => {
       'video/mp4', 'video/webm', 'video/ogg', 'application/pdf',
       'text/plain', 'text/csv',
     ]);
-    const stream = await getStorageStream(file.storage_key);
-    if (!stream) throw httpError(404, 'File content is missing.');
+    const stored = await getStorageObject(file.storage_key);
+    if (!stored) throw httpError(404, 'File content is missing.');
     if (req.query.inline === '1' && inlineTypes.has(file.mime_type)) {
-      res.type(file.mime_type === 'text/csv' ? 'text/plain' : file.mime_type);
-      stream.on('error', next);
-      return stream.pipe(res);
+      res.setHeader('Content-Disposition', 'inline');
+      res.type(stored.contentType || (file.mime_type === 'text/csv' ? 'text/plain' : file.mime_type));
+      if (Number.isFinite(stored.size)) res.setHeader('Content-Length', stored.size);
+      stored.stream.on('error', next);
+      return stored.stream.pipe(res);
     }
     res.attachment(file.name);
-    res.type(file.mime_type);
-    stream.on('error', next);
-    return stream.pipe(res);
+    res.type(stored.contentType || file.mime_type);
+    if (Number.isFinite(stored.size)) res.setHeader('Content-Length', stored.size);
+    stored.stream.on('error', next);
+    return stored.stream.pipe(res);
   } catch (err) {
     next(err);
   }
