@@ -26,8 +26,10 @@ function getFilePath(storageKey) {
 
 async function ensureStorageReady() {
   if (isVercel) {
-    if (!process.env.BLOB_STORE_ID || (!process.env.VERCEL_OIDC_TOKEN && !process.env.BLOB_READ_WRITE_TOKEN)) {
-      const err = new Error('Connect a private Vercel Blob store to enable Gallery storage.');
+    const hasOidcCredentials = Boolean(process.env.BLOB_STORE_ID && process.env.VERCEL_OIDC_TOKEN);
+    const hasReadWriteToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+    if (!hasOidcCredentials && !hasReadWriteToken) {
+      const err = new Error('Connect a private Vercel Blob store or configure its read/write token to enable file uploads.');
       err.code = 'GALLERY_STORAGE_NOT_CONFIGURED';
       throw err;
     }

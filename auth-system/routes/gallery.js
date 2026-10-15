@@ -243,7 +243,6 @@ router.get('/items', async (req, res, next) => {
     const limit = pageValue(req.query.limit, 100, 100);
     const offset = pageValue(req.query.offset, 0, 1000000);
     const sort = ['name', 'favorites', 'date', 'size', 'type'].includes(req.query.sort) ? req.query.sort : 'name';
-    await ensureStorageReady();
     await assertActiveFolder(ownerId, folderId);
     const result = await Gallery.list(ownerId, folderId, category, search, { limit, offset, sort });
     res.json({ success: true, ...result, limit, offset });
@@ -254,7 +253,6 @@ router.get('/items', async (req, res, next) => {
 
 router.get('/folders', async (req, res, next) => {
   try {
-    await ensureStorageReady();
     const result = await db.execute({
       sql: `SELECT id, name, parent_id FROM gallery_folders
         WHERE owner_id = ? AND deleted_at IS NULL ORDER BY lower(name)`,
@@ -268,7 +266,6 @@ router.get('/folders', async (req, res, next) => {
 
 router.get('/trash', async (req, res, next) => {
   try {
-    await ensureStorageReady();
     const limit = pageValue(req.query.limit, 100, 100);
     const offset = pageValue(req.query.offset, 0, 1000000);
     const sort = ['name', 'date', 'size', 'type'].includes(req.query.sort) ? req.query.sort : 'date';
@@ -289,7 +286,6 @@ router.post('/folders', async (req, res, next) => {
     const ownerId = Number(req.user.userId);
     const name = cleanName(body.name);
     const parentId = rootOrPositiveId(body.parentId);
-    await ensureStorageReady();
     await assertActiveFolder(ownerId, parentId);
     if (await Gallery.nameExists(ownerId, parentId, name)) {
       return res.status(409).json({ success: false, message: 'An item with that name already exists here.' });
@@ -307,7 +303,6 @@ router.patch('/folders/:id', async (req, res, next) => {
     const ownerId = Number(req.user.userId);
     const folderId = positiveId(req.params.id, 'folder id');
     const name = cleanName(body.name);
-    await ensureStorageReady();
     const folder = await Gallery.getFolder(ownerId, folderId);
     if (!folder) return res.status(404).json({ success: false, message: 'Folder not found.' });
     if (
@@ -329,7 +324,6 @@ router.patch('/files/:id', async (req, res, next) => {
     const ownerId = Number(req.user.userId);
     const fileId = positiveId(req.params.id, 'file id');
     const name = cleanName(body.name);
-    await ensureStorageReady();
     const file = await Gallery.getFile(ownerId, fileId);
     if (!file) return res.status(404).json({ success: false, message: 'File not found.' });
     if (
@@ -440,8 +434,6 @@ router.post('/trash', async (req, res, next) => {
     const fileIds = idArray(body.fileIds, 'file IDs');
     const folderIds = idArray(body.folderIds, 'folder IDs');
     if (!fileIds.length && !folderIds.length) throw httpError(400, 'Select at least one item to delete.');
-    await ensureStorageReady();
-
     const selectedFolders = [];
     for (const folderId of folderIds) {
       if (!(await Gallery.getFolder(ownerId, folderId))) throw httpError(404, 'One or more folders were not found.');
@@ -518,7 +510,6 @@ router.post('/favorites', async (req, res, next) => {
     if (typeof body.isFavorite !== 'boolean') {
       throw httpError(400, 'Favorite status must be true or false.');
     }
-    await ensureStorageReady();
     for (const fileId of fileIds) {
       if (!(await Gallery.getFile(ownerId, fileId))) {
         throw httpError(404, 'One or more files were not found.');
