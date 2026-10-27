@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gallery | Rohith Solution</title>
-  <link rel="stylesheet" href="/css/style.css?v=10">
+  <link rel="stylesheet" href="/css/style.css?v=12">
 </head>
 <body class="gallery-page">
   <header class="gallery-header">
     <a class="dashboard-brand" href="/dashboard.html">Rohith Solution</a>
     <nav class="gallery-top-nav" aria-label="Main navigation">
-      <a class="active" href="/gallery.html">Gallery</a>
+      <a href="/gallery.html">Gallery</a>
+      <a href="/gallery.html?view=favorites">Favorites</a>
       <a href="/recently-deleted.html">Recently Deleted</a>
       <a href="/dashboard.html">Home</a>
     </nav>
@@ -55,9 +56,8 @@
         </label>
         <label class="gallery-sort-label" for="sortSelect">Sort</label>
         <select id="sortSelect" aria-label="Sort files">
-          <option value="name">Name</option>
-          <option value="favorites">Favorites</option>
-          <option value="date">Newest</option>
+          <option value="name">A – Z</option>
+          <option value="date">Recent</option>
         </select>
         <label class="gallery-sort-label" for="galleryCategory">Type</label>
         <select id="galleryCategory" aria-label="Filter files by type">
@@ -77,7 +77,7 @@
       <button class="gallery-button text-button" id="clearSelection" type="button">Cancel</button>
     </section>
 
-    <p class="gallery-notice" id="galleryNotice" role="status" aria-live="polite"></p>
+    <p class="gallery-notice" id="galleryNotice" role="status" aria-live="polite" hidden></p>
     <div class="gallery-loading" id="loadingIndicator" hidden>Loading your files…</div>
     <section class="gallery-grid" id="itemGrid" aria-live="polite"></section>
     <div class="gallery-pagination" id="paginationControls" hidden>
@@ -132,6 +132,6 @@
   </dialog>
 
 
-  <script src="/js/gallery.js?v=18"></script>
+  <script src="/js/gallery.js?v=21"></script>
 </body>
 </html>

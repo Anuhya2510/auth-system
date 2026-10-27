@@ -1,5 +1,6 @@
 const isTrashView = window.location.pathname.endsWith('/recently-deleted.html');
 const query = new URLSearchParams(window.location.search);
+const isFavoritesView = query.get('view') === 'favorites';
 let category = ['all', 'photos', 'videos', 'documents', 'folders'].includes(query.get('category'))
   ? query.get('category')
   : 'all';
@@ -16,6 +17,7 @@ let pendingRename = null;
 let searchTimer;
 let isUploading = false;
 let noticeTimer;
+let initialPageLoad = true;
 
 const itemGrid = document.getElementById('itemGrid');
 const loadingIndicator = document.getElementById('loadingIndicator');
@@ -28,7 +30,7 @@ function itemKey(item) {
   return `${item.kind}:${item.id}`;
 }
 
-function showNotice(message, type = 'success', duration = 0) {
+function showNotice(message, type = 'success', duration = 5000) {
   clearTimeout(noticeTimer);
   galleryNotice.textContent = message;
   galleryNotice.className = `gallery-notice ${type}`;
@@ -399,6 +401,7 @@ async function loadPage(append) {
       search,
       sort,
     });
+    if (isFavoritesView) params.set('favoritesOnly', '1');
     const result = isTrashView
       ? await api(`/api/gallery/trash?${params}&category=${document.getElementById('trashCategory').value}`)
       : await api(
@@ -415,7 +418,7 @@ async function loadPage(append) {
     }
     renderItems();
   } catch (err) {
-    showNotice(err.message, 'error');
+    if (!initialPageLoad) showNotice(err.message, 'error');
   } finally {
     loadingIndicator.hidden = true;
     if (totalItems > 0) itemGrid.hidden = false;
@@ -767,7 +770,13 @@ function configurePage() {
     document.getElementById('restoreAllButton').addEventListener('click', restoreAll);
   } else {
     document.getElementById('emptyTrashButton')?.remove();
+    if (isFavoritesView) document.getElementById('sortSelect').value = 'date';
     document.getElementById('galleryCategory').value = category;
+    document.querySelectorAll('.gallery-top-nav a').forEach((link) => {
+      link.classList.toggle('active', isFavoritesView
+        ? link.href.includes('view=favorites')
+        : new URL(link.href).pathname === '/gallery.html' && !link.href.includes('view=favorites'));
+    });
     categoryNav?.querySelectorAll('a').forEach((link) => {
       link.classList.toggle('active', link.dataset.category === category);
     });
@@ -789,7 +798,7 @@ function configurePage() {
       category === 'photos' ? 'Photos' :
         category === 'videos' ? 'Videos' :
           category === 'documents' ? 'Documents' :
-            category === 'folders' ? 'Folders' : 'Gallery';
+            category === 'folders' ? 'Folders' : isFavoritesView ? 'Favorites' : 'Gallery';
     if (toolbar) toolbar.classList.add('active-gallery-toolbar');
     configureDropUpload();
   }
@@ -807,7 +816,7 @@ function configurePage() {
       category === 'photos' ? 'Photos' :
         category === 'videos' ? 'Videos' :
           category === 'documents' ? 'Documents' :
-            category === 'folders' ? 'Folders' : 'Gallery';
+            category === 'folders' ? 'Folders' : isFavoritesView ? 'Favorites' : 'Gallery';
     const nextUrl = new URL(window.location.href);
     if (category === 'all') nextUrl.searchParams.delete('category');
     else nextUrl.searchParams.set('category', category);
@@ -908,7 +917,9 @@ async function initialize() {
     if (!isTrashView) await loadFolders();
     await loadItems();
   } catch (err) {
-    showNotice(err.message, 'error');
+    // Keep automatic page-load failures from appearing as action alerts.
+  } finally {
+    initialPageLoad = false;
   }
 }
 

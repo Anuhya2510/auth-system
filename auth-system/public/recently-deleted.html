@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Recently Deleted | Rohith Solution</title>
-  <link rel="stylesheet" href="/css/style.css?v=2">
+  <link rel="stylesheet" href="/css/style.css?v=4">
 </head>
 <body class="gallery-page">
   <header class="gallery-header">
     <a class="dashboard-brand" href="/dashboard.html">Rohith Solution</a>
     <nav class="gallery-top-nav" aria-label="Main navigation">
       <a href="/gallery.html">Gallery</a>
+      <a href="/gallery.html?view=favorites">Favorites</a>
       <a class="active" href="/recently-deleted.html">Recently Deleted</a>
       <a href="/dashboard.html">Home</a>
     </nav>
@@ -67,7 +68,7 @@
       <button class="gallery-button text-button" id="clearSelection" type="button">Cancel</button>
     </section>
 
-    <p class="gallery-notice" id="galleryNotice" role="status" aria-live="polite"></p>
+    <p class="gallery-notice" id="galleryNotice" role="status" aria-live="polite" hidden></p>
     <div class="gallery-loading" id="loadingIndicator" hidden>Loading deleted items…</div>
     <section class="gallery-grid" id="itemGrid" aria-live="polite"></section>
     <div class="gallery-pagination" id="paginationControls" hidden>
@@ -105,6 +106,6 @@
     </form>
   </dialog>
 
-  <script src="/js/gallery.js?v=18"></script>
+  <script src="/js/gallery.js?v=21"></script>
 </body>
 </html>

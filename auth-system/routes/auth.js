@@ -182,7 +182,7 @@ router.post('/signup/resend-otp', otpRequestLimiter, otpRules, handleValidation,
 /* LOGIN                                                               */
 /* ------------------------------------------------------------------ */
 
-// Step 1: verify credentials, then send login OTP.
+// Verify credentials and create a session. OTP verification is required at signup only.
 router.post('/login/start', loginLimiter, loginRules, handleValidation, async (req, res, next) => {
   try {
     const { identifier, password } = req.body;
@@ -204,85 +204,19 @@ router.post('/login/start', loginLimiter, loginRules, handleValidation, async (r
       });
     }
 
-    const result = await otpCooldownGuard(res, () => issueOtp(user.email, 'login'));
-    if (!result) return;
-
-    if (!(await sendOtpOrRespond(res, user.email, 'login', result))) return;
-
-    res.json({
-      success: true,
-      message: 'Login code sent to your email.',
-      email: user.email,
-      expiresInMinutes: result.expiresInMinutes,
-    });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Step 2: verify login OTP, issue JWT session.
-router.post(
-  '/login/verify-otp',
-  otpVerifyLimiter,
-  otpVerifyRules,
-  handleValidation,
-  async (req, res, next) => {
-    try {
-      const { email, code } = req.body;
-      const normalizedEmail = email.toLowerCase();
-
-      const result = await verifyOtp(normalizedEmail, 'login', code);
-      if (!result.success) {
-        const messages = {
-          not_found: 'No login code found. Please log in again.',
-          expired: 'This code has expired. Please request a new one.',
-          max_attempts: 'Too many incorrect attempts. Please log in again.',
-          invalid: 'Incorrect verification code.',
-        };
-        return res.status(400).json({ success: false, message: messages[result.reason] });
-      }
-
-      const user = await User.findByEmailWithSecret(normalizedEmail);
-      if (!user) {
-        return res.status(400).json({ success: false, message: 'Account not found.' });
-      }
-
-      const token = signToken({ userId: user.id, email: user.email });
-
-      res
-        .cookie('auth_token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        })
-        .json({
-          success: true,
-          message: 'Login successful.',
-          user: { id: user.id, username: user.username, email: user.email },
-        });
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-// Resend OTP for login.
-router.post('/login/resend-otp', otpRequestLimiter, otpRules, handleValidation, async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    const normalizedEmail = email.toLowerCase();
-    const user = await User.findByEmailWithSecret(normalizedEmail);
-    if (!user) {
-      // Generic response — don't reveal account existence.
-      return res.json({ success: true, message: GENERIC_OTP_SENT });
-    }
-
-    const result = await otpCooldownGuard(res, () => issueOtp(normalizedEmail, 'login'));
-    if (!result) return;
-
-    if (!(await sendOtpOrRespond(res, normalizedEmail, 'login', result))) return;
-    res.json({ success: true, message: 'Login code resent.', expiresInMinutes: result.expiresInMinutes });
+    const token = signToken({ userId: user.id, email: user.email });
+    res
+      .cookie('auth_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        success: true,
+        message: 'Login successful.',
+        user: { id: user.id, username: user.username, email: user.email },
+      });
   } catch (err) {
     next(err);
   }

@@ -5,8 +5,8 @@ function placeholders(values) {
 }
 
 const Gallery = {
-  async list(ownerId, folderId, category, search, { limit = 100, offset = 0, sort = 'name' } = {}) {
-    const favoritesOnly = sort === 'favorites' ? ' AND is_favorite = 1' : '';
+  async list(ownerId, folderId, category, search, { limit = 100, offset = 0, sort = 'name', favoritesOnly = false } = {}) {
+    const favoriteFilter = favoritesOnly || sort === 'favorites' ? ' AND is_favorite = 1' : '';
     const includeFolders = category === 'all' || category === 'folders';
     const includeFiles = category !== 'folders';
     const fileCategory = {
@@ -18,11 +18,11 @@ const Gallery = {
       'folder' AS kind, NULL AS mime_type, 0 AS size
       FROM gallery_folders
       WHERE owner_id = ? AND parent_id = ? AND deleted_at IS NULL
-        AND instr(lower(name), lower(?)) > 0${favoritesOnly}`;
+        AND instr(lower(name), lower(?)) > 0${favoriteFilter}`;
     const fileQuery = `SELECT id, name, folder_id, created_at, is_favorite, 'file' AS kind, mime_type, size
       FROM gallery_files
       WHERE owner_id = ? AND folder_id = ? AND deleted_at IS NULL
-        AND ${fileCategory || '1 = 1'} AND instr(lower(name), lower(?)) > 0${favoritesOnly}`;
+        AND ${fileCategory || '1 = 1'} AND instr(lower(name), lower(?)) > 0${favoriteFilter}`;
     const queries = [];
     const args = [];
     if (includeFolders) {

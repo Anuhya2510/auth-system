@@ -1,51 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Log In</title>
-<link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1730">
+  <title>Log in | Rohith Solutions</title>
+  <link rel="stylesheet" href="/css/auth.css?v=1">
 </head>
-<body>
-<div class="card">
-  <h1>Welcome back</h1>
-  <p class="subtitle" id="subtitle">Log in to your account</p>
+<body class="auth-page">
+  <main class="auth-layout">
+    <aside class="auth-brand-panel" aria-label="Rohith Solutions">
+      <a class="auth-brand" href="/" aria-label="Rohith Solutions home">
+        <span class="auth-brand-mark" aria-hidden="true">R</span>
+        <span>Rohith <strong>Solutions</strong></span>
+      </a>
+      <div class="auth-brand-copy">
+        <span class="auth-eyebrow">A better way to work</span>
+        <h2>Everything you need.<br><span>All in one place.</span></h2>
+        <p>Your workspace for the things that move your business forward.</p>
+      </div>
+      <div class="auth-brand-orb auth-brand-orb-one" aria-hidden="true"></div>
+      <div class="auth-brand-orb auth-brand-orb-two" aria-hidden="true"></div>
+      <div class="auth-brand-footer">Secure access to your Rohith Solutions workspace</div>
+    </aside>
 
-  <!-- Step 1: credentials -->
-  <form id="loginForm">
-    <label for="identifier">Email or username</label>
-    <input type="text" id="identifier" autocomplete="username" required>
+    <section class="auth-content" aria-labelledby="loginHeading">
+      <div class="auth-form-wrap">
+        <a class="auth-mobile-brand" href="/">
+          <span class="auth-brand-mark" aria-hidden="true">R</span> Rohith Solutions
+        </a>
+        <div class="auth-heading">
+          <span class="auth-eyebrow">Welcome back</span>
+          <h1 id="loginHeading">Sign in to your account</h1>
+          <p>Enter your details to continue to your workspace.</p>
+        </div>
 
-    <label for="password">Password</label>
-    <div class="password-field">
-      <input type="password" id="password" autocomplete="current-password" required>
-      <button type="button" class="toggle-visibility" data-target="password">Show</button>
-    </div>
+        <form id="loginForm" class="auth-form">
+          <div class="auth-field">
+            <label for="identifier">Email or username</label>
+            <input type="text" id="identifier" name="identifier" autocomplete="username" placeholder="you@example.com" required>
+          </div>
 
-    <button type="submit" class="primary" id="loginSubmit">Continue</button>
-    <div class="msg" id="loginMsg"></div>
-  </form>
+          <div class="auth-field">
+            <div class="auth-label-row">
+              <label for="password">Password</label>
+              <a class="auth-inline-link" href="/forgot-password.html">Forgot password?</a>
+            </div>
+            <div class="password-field auth-password-field">
+              <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Enter your password" required>
+              <button type="button" class="toggle-visibility auth-toggle" data-target="password" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+          </div>
 
-  <!-- Step 2: OTP -->
-  <form id="otpForm" class="hidden">
-    <label for="otpCode">Enter the 6-digit code sent to your email</label>
-    <input type="text" id="otpCode" inputmode="numeric" maxlength="6" required>
+          <button type="submit" class="auth-submit" id="loginSubmit">
+            <span class="button-spinner" aria-hidden="true"></span>
+            <span class="button-label">Sign in</span>
+          </button>
+          <div class="auth-message" id="loginMsg" role="status" aria-live="polite"></div>
+        </form>
 
-    <div class="otp-row">
-      <span id="otpTimer" style="font-size:13px;color:var(--muted);"></span>
-      <button type="button" class="link" id="resendOtpBtn" disabled>Resend code</button>
-    </div>
-
-    <button type="submit" class="primary" id="otpSubmit">Verify & log in</button>
-    <div class="msg" id="otpMsg"></div>
-  </form>
-
-  <p class="footer-link">
-    <a href="/forgot-password.html">Forgot password?</a> ·
-    New here? <a href="/signup.html">Sign up</a>
-  </p>
-</div>
-<script src="/js/common.js"></script>
-<script src="/js/login.js"></script>
+        <p class="auth-switch">New to Rohith Solutions? <a href="/signup.html">Create an account</a></p>
+        <p class="auth-legal">By continuing, you agree to use your account responsibly.</p>
+      </div>
+    </section>
+  </main>
+  <script src="/js/common.js"></script>
+  <script src="/js/login.js?v=1"></script>
 </body>
 </html>

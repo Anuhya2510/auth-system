@@ -184,6 +184,9 @@ button.link:disabled {
 }
 
 .dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   min-height: 76px;
   padding: 16px clamp(20px, 5vw, 72px);
   display: grid;
@@ -362,6 +365,7 @@ button.link:disabled {
   display: block;
   min-height: 100vh;
   padding: 0;
+  overflow-x: clip;
   background: #f2f5f0;
   color: #203b32;
   font-family: 'Trebuchet MS', Arial, sans-serif;
@@ -645,10 +649,22 @@ button.link:disabled {
 }
 
 .gallery-notice {
-  margin: 14px 0;
-  padding: 11px 13px;
-  border-radius: 6px;
+  position: fixed;
+  top: 92px;
+  right: clamp(16px, 4vw, 48px);
+  z-index: 50;
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 108px);
+  overflow-y: auto;
+  margin: 0;
+  padding: 14px 18px;
+  border: 1px solid #cbd5ce;
+  border-left: 4px solid currentColor;
+  border-radius: 8px;
   font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 8px 28px rgb(24 45 34 / 18%);
+  animation: gallery-notice-in 160ms ease-out;
 }
 
 .gallery-notice[hidden] {
@@ -663,6 +679,11 @@ button.link:disabled {
 .gallery-notice.error {
   color: #9b1c1c;
   background: #fcebea;
+}
+
+@keyframes gallery-notice-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .gallery-loading {

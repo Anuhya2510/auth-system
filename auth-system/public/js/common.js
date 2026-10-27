@@ -3,9 +3,12 @@ function initPasswordToggles() {
   document.querySelectorAll('.toggle-visibility').forEach((btn) => {
     btn.addEventListener('click', () => {
       const target = document.getElementById(btn.dataset.target);
+      if (!target) return;
       const isHidden = target.type === 'password';
       target.type = isHidden ? 'text' : 'password';
       btn.textContent = isHidden ? 'Hide' : 'Show';
+      btn.setAttribute('aria-label', `${isHidden ? 'Hide' : 'Show'} password`);
+      btn.setAttribute('aria-pressed', String(!isHidden));
     });
   });
 }

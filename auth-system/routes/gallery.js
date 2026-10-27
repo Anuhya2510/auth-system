@@ -243,8 +243,9 @@ router.get('/items', async (req, res, next) => {
     const limit = pageValue(req.query.limit, 100, 100);
     const offset = pageValue(req.query.offset, 0, 1000000);
     const sort = ['name', 'favorites', 'date', 'size', 'type'].includes(req.query.sort) ? req.query.sort : 'name';
+    const favoritesOnly = req.query.favoritesOnly === '1';
     await assertActiveFolder(ownerId, folderId);
-    const result = await Gallery.list(ownerId, folderId, category, search, { limit, offset, sort });
+    const result = await Gallery.list(ownerId, folderId, category, search, { limit, offset, sort, favoritesOnly });
     res.json({ success: true, ...result, limit, offset });
   } catch (err) {
     next(err);

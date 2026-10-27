@@ -8,8 +8,8 @@ Node.js + Express backend, SQLite database, and plain HTML/CSS/JS frontend.
 - **Signup**: username, email OTP verification, SMS mobile verification via
   Twilio Verify, strong password + confirm, live password-strength meter,
   show/hide password, resend codes.
-- **Login**: email-or-username + password, then a login OTP step, forgot
-  password link, resend OTP with cooldown.
+- **Login**: email-or-username + password, forgot password link. OTP
+  verification is required when creating an account.
 - **Forgot password**: email → reset link → secure, expiring, single-use
   reset token → set new password + confirm.
 - **Security**: bcrypt password hashing (cost 12) and bcrypt-hashed OTPs,
@@ -127,11 +127,9 @@ existing username/email, hashes the password, stores the signup as
 an SMS code. `POST /api/auth/signup/verify-mobile-otp` creates the user only
 after the phone number is approved. Abandoned signups expire after 30 minutes.
 
-**Login**: `POST /api/auth/login/start` checks credentials first (returning
-a generic "Invalid credentials" either way, so the API doesn't reveal
-whether the account exists), then emails a login OTP. `POST
-/api/auth/login/verify-otp` checks the code and, on success, sets an
-httpOnly JWT cookie (`auth_token`).
+**Login**: `POST /api/auth/login/start` checks credentials (returning a
+generic "Invalid credentials" either way) and, on success, sets an httpOnly
+JWT cookie (`auth_token`). OTP verification is used for account creation only.
 
 **Forgot/reset password**: `POST /api/auth/forgot-password` always returns
 the same generic message regardless of whether the email is registered.

@@ -3,58 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sign Up</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta name="theme-color" content="#0b1730">
+  <title>Create account | Rohith Solutions</title>
+  <link rel="stylesheet" href="/css/auth.css?v=1">
 </head>
-<body>
-  <div class="card">
-    <h1>Create your account</h1>
-    <p class="subtitle" id="subtitle">Fill in your details to get started</p>
-
-    <!-- Step 1: details -->
-    <form id="signupForm">
-      <label for="username">Username</label>
-      <input type="text" id="username" autocomplete="username" required>
-
-      <label for="email">Email</label>
-      <input type="email" id="email" autocomplete="email" required>
-
-      <label for="password">Password</label>
-      <div class="password-field">
-        <input type="password" id="password" autocomplete="new-password" required>
-        <button type="button" class="toggle-visibility" data-target="password">Show</button>
+<body class="auth-page">
+  <main class="auth-layout auth-layout-signup">
+    <aside class="auth-brand-panel" aria-label="Rohith Solutions">
+      <a class="auth-brand" href="/" aria-label="Rohith Solutions home">
+        <span class="auth-brand-mark" aria-hidden="true">R</span>
+        <span>Rohith <strong>Solutions</strong></span>
+      </a>
+      <div class="auth-brand-copy">
+        <span class="auth-eyebrow">Make room for what matters</span>
+        <h2>One secure place<br>to <span>move forward.</span></h2>
+        <p>Create your account and bring your work together.</p>
       </div>
-      <div class="strength-meter"><div class="strength-meter-fill" id="strengthFill"></div></div>
-      <div class="strength-label" id="strengthLabel">Enter a password</div>
+      <div class="auth-brand-orb auth-brand-orb-one" aria-hidden="true"></div>
+      <div class="auth-brand-orb auth-brand-orb-two" aria-hidden="true"></div>
+      <div class="auth-brand-footer">Your workspace, ready when you are</div>
+    </aside>
 
-      <label for="confirmPassword">Confirm password</label>
-      <div class="password-field">
-        <input type="password" id="confirmPassword" autocomplete="new-password" required>
-        <button type="button" class="toggle-visibility" data-target="confirmPassword">Show</button>
+    <section class="auth-content auth-content-signup" aria-labelledby="signupHeading">
+      <div class="auth-form-wrap">
+        <a class="auth-mobile-brand" href="/">
+          <span class="auth-brand-mark" aria-hidden="true">R</span> Rohith Solutions
+        </a>
+        <div class="auth-heading">
+          <span class="auth-eyebrow" id="signupStep">Create your account</span>
+          <h1 id="signupHeading">Get started for free</h1>
+          <p id="subtitle">Add your details to set up your secure workspace.</p>
+        </div>
+
+        <form id="signupForm" class="auth-form">
+          <div class="auth-field">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" autocomplete="username" placeholder="Choose a username" minlength="3" maxlength="30" required>
+          </div>
+          <div class="auth-field">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+          </div>
+          <div class="auth-field">
+            <label for="mobile">Mobile number <span class="auth-optional">Optional</span></label>
+            <input type="tel" id="mobile" name="mobile" autocomplete="tel" placeholder="Add a contact number">
+          </div>
+          <div class="auth-field">
+            <label for="password">Password</label>
+            <div class="password-field auth-password-field">
+              <input type="password" id="password" name="password" autocomplete="new-password" placeholder="Create a strong password" required>
+              <button type="button" class="toggle-visibility auth-toggle" data-target="password" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+            <div class="strength-meter auth-strength-meter" aria-hidden="true"><div class="strength-meter-fill" id="strengthFill"></div></div>
+            <div class="strength-label" id="strengthLabel" aria-live="polite">Enter a password</div>
+          </div>
+          <div class="auth-field">
+            <label for="confirmPassword">Confirm password</label>
+            <div class="password-field auth-password-field">
+              <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="Enter your password again" required>
+              <button type="button" class="toggle-visibility auth-toggle" data-target="confirmPassword" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-submit" id="signupSubmit">
+            <span class="button-spinner" aria-hidden="true"></span>
+            <span class="button-label">Create account</span>
+          </button>
+          <div class="auth-message" id="signupMsg" role="status" aria-live="polite"></div>
+        </form>
+
+        <form id="otpForm" class="auth-form auth-otp-form hidden">
+          <div class="auth-otp-icon" aria-hidden="true">✉</div>
+          <div class="auth-field">
+            <label for="otpCode">Email verification code</label>
+            <input type="text" id="otpCode" name="otpCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit code" required>
+          </div>
+          <div class="auth-otp-row">
+            <span id="otpTimer" aria-live="polite"></span>
+            <button type="button" class="auth-inline-link" id="resendOtpBtn" disabled>Resend code</button>
+          </div>
+          <button type="submit" class="auth-submit" id="otpSubmit">
+            <span class="button-spinner" aria-hidden="true"></span>
+            <span class="button-label">Verify email</span>
+          </button>
+          <div class="auth-message" id="otpMsg" role="status" aria-live="polite"></div>
+        </form>
+
+        <p class="auth-switch">Already have an account? <a href="/login.html">Sign in</a></p>
+        <p class="auth-legal">We’ll send a code to verify your email address.</p>
       </div>
-
-      <button type="submit" class="primary" id="signupSubmit">Create account</button>
-      <div class="msg" id="signupMsg"></div>
-    </form>
-
-    <!-- Step 2: OTP -->
-    <form id="otpForm" class="hidden">
-      <label for="otpCode">Enter the 6-digit code sent to your email</label>
-      <input type="text" id="otpCode" inputmode="numeric" maxlength="6" required>
-
-      <div class="otp-row">
-        <span id="otpTimer" style="font-size:13px;color:var(--muted);"></span>
-        <button type="button" class="link" id="resendOtpBtn" disabled>Resend code</button>
-      </div>
-
-      <button type="submit" class="primary" id="otpSubmit">Verify &amp; create account</button>
-      <div class="msg" id="otpMsg"></div>
-    </form>
-
-    <p class="footer-link">Already have an account? <a href="/login.html">Log in</a></p>
-  </div>
-
+    </section>
+  </main>
   <script src="/js/common.js"></script>
-  <script src="/js/signup.js"></script>
+  <script src="/js/signup.js?v=1"></script>
 </body>
 </html>

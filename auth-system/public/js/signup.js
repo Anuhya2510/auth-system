@@ -6,6 +6,22 @@ const signupMsg = document.getElementById('signupMsg');
 const otpMsg = document.getElementById('otpMsg');
 const subtitle = document.getElementById('subtitle');
 
+function setLoading(button, loading, loadingLabel) {
+  const label = button.querySelector('.button-label');
+  if (loading) {
+    button.dataset.originalLabel = label.textContent;
+    button.disabled = true;
+    button.classList.add('is-loading');
+    button.setAttribute('aria-busy', 'true');
+    label.textContent = loadingLabel;
+  } else {
+    button.disabled = false;
+    button.classList.remove('is-loading');
+    button.removeAttribute('aria-busy');
+    label.textContent = button.dataset.originalLabel || label.textContent;
+  }
+}
+
 let pendingEmail = null;
 
 const otpTimer = createOtpTimer({
@@ -30,17 +46,22 @@ const otpTimer = createOtpTimer({
 signupForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const submitBtn = document.getElementById('signupSubmit');
-  submitBtn.disabled = true;
+  setLoading(submitBtn, true, 'Creating account…');
 
   const payload = {
     username: document.getElementById('username').value.trim(),
     email: document.getElementById('email').value.trim(),
+    mobile: document.getElementById('mobile').value.trim(),
     password: document.getElementById('password').value,
     confirmPassword: document.getElementById('confirmPassword').value,
   };
 
-  const { data } = await postJson('/api/auth/signup/start', payload);
-  submitBtn.disabled = false;
+  let data;
+  try {
+    ({ data } = await postJson('/api/auth/signup/start', payload));
+  } finally {
+    setLoading(submitBtn, false);
+  }
 
   if (!data.success) {
     showMsg(signupMsg, data.message, 'error');
@@ -50,6 +71,8 @@ signupForm.addEventListener('submit', async (e) => {
   pendingEmail = payload.email;
   signupForm.classList.add('hidden');
   otpForm.classList.remove('hidden');
+  document.getElementById('signupHeading').textContent = 'Verify your email';
+  document.getElementById('signupStep').textContent = 'One last step';
   subtitle.textContent = `We sent a code to ${pendingEmail}`;
   otpTimer.start();
 });
@@ -57,15 +80,19 @@ signupForm.addEventListener('submit', async (e) => {
 otpForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const submitBtn = document.getElementById('otpSubmit');
-  submitBtn.disabled = true;
+  setLoading(submitBtn, true, 'Verifying…');
 
   const code = document.getElementById('otpCode').value.trim();
-  const { data } = await postJson('/api/auth/signup/verify-otp', {
-    email: pendingEmail,
-    purpose: 'signup',
-    code,
-  });
-  submitBtn.disabled = false;
+  let data;
+  try {
+    ({ data } = await postJson('/api/auth/signup/verify-otp', {
+      email: pendingEmail,
+      purpose: 'signup',
+      code,
+    }));
+  } finally {
+    setLoading(submitBtn, false);
+  }
 
   if (!data.success) {
     showMsg(otpMsg, data.message, 'error');
